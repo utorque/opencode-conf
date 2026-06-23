@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "./plugins/caveman/plugin.js",
+    "cc-safety-net",
+    "context-mode"
+  ],
+  "instructions": [
+    "AGENTS.md",
+    ".opencode/context/CONTEXT.md"
+  ],
+  "permission": {
+    "skill": {
+      "*": "allow"
+    }
+  },
+  "agent": {
+    "plan": {
+      "disable": true
+    }
+  }
+}

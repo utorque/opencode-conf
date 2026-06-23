@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# lockfiles (regenerate per machine)
+bun.lock
+package-lock.json
+
+# runtime state
+.caveman-active
+context-mode/sessions/
+
+# installed plugins — reproduced by install_plugins.sh
+plugins/
