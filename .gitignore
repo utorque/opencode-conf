@@ -11,3 +11,6 @@ context-mode/sessions/
 
 # installed plugins — reproduced by install_plugins.sh
 plugins/
+
+# ?
+*.json.bak

@@ -26,8 +26,16 @@ command -v opencode >/dev/null 2>&1 || {
 }
 opencode plugin -g cc-safety-net
 
-echo "==> [3/3] caveman"
+echo "==> [3/4] caveman"
 git clone --depth 1 "$CAVEMAN_REPO" "$TMPDIR/caveman"
 bun "$TMPDIR/caveman/bin/install.js" --only opencode
+
+echo "==> [4/4] prune caveman agents/commands"
+# caveman installer drops caveman-* commands and cavecrew-* agents;
+# we keep only the skills. remove the agent/command shims here.
+rm -f agents/cavecrew-builder.md agents/cavecrew-investigator.md agents/cavecrew-reviewer.md
+rm -f commands/caveman.md commands/caveman-commit.md commands/caveman-compress.md \
+      commands/caveman-help.md commands/caveman-review.md commands/caveman-stats.md
+rm -rf skills/cavecrew
 
 echo "==> done. context-mode installs itself automatically via opencode."
