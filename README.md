@@ -7,7 +7,7 @@ My personal [opencode](https://opencode.ai) configuration. Tuned for token-effic
 ### 1. Clone
 
 ```bash
-git clone <repo-url> ~/.config/opencode
+git clone git@github.com:utorque/opencode-conf.git ~/.config/opencode
 cd ~/.config/opencode
 ```
 
