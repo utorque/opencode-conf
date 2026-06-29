@@ -54,11 +54,18 @@ Present the proposed breakdown as a numbered list. For each slice, show:
 
 Ask the user:
 
-- Does the granularity feel right? (too coarse / too fine)
 - Are the dependency relationships correct?
-- Should any slices be merged or split further?
+- Should any slices be split further?
 
 Iterate until the user approves the breakdown.
+
+<granularity-default>
+
+**Always split parallelizable slices.** If two slices are independent (neither blocks the other), they belong in separate files — separate PRs, independently demoable, grabbable by parallel agents. Merging forfeits parallelism for no gain. Don't ask; just split.
+
+Merge only when slices are coupled (can't be demoed without the other landing first) or share an indivisible user story. If unsure, split.
+
+</granularity-default>
 
 ### 5. Write the issue files
 
