@@ -91,5 +91,12 @@ Any further notes about the feature.
 
 ## After writing
 
-- Set `Status` to `Draft` while writing, then `Aligned` once the user signs off on the PRD.
+- Set `Status` to `Draft` while writing, then `Aligned` once the user signs off on the PRD. Sign-off may be explicit ("approved", "LGTM") or **implicit** — the user directing the next phase ("cut issues", "to-issues", "GO", "launch the subagents") counts as approval. Flip `Draft → Aligned` at the moment you hand off to the next phase; never leave a PRD at `Draft` once its issues are being cut.
 - The PRD is the source of truth for the downstream `to-issues` phase.
+
+## Lifecycle end (Aligned → Done)
+
+- A PRD moves `Aligned → Done` when **every** non-archived issue under its parent reference has moved to `DONE` (or `CANCELLED`) and been moved to `.opencode/plans/issues/archive/`. Scan `issues/` (excluding `archive/`) for any remaining sibling of this PRD; if none, the PRD is complete.
+- At that moment, the agent performing the last close-out flips `Status: Aligned → Done` and moves the PRD file to `.opencode/plans/archive/`.
+- `Cancelled` supersedes any other state.
+- If the implementing agent is one of several launched in parallel, the agent that launched them owns close-out (see AGENTS.md "Planning artifacts"); individual subagents only flip their own issue's `Status` and archive their own issue file.

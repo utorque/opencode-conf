@@ -1,7 +1,8 @@
 ---
 description: Autonomous engineering agent. Runs without asking for permission on any tool. Use for long unattended task chains where you accept the risk of unchecked edits, bash, and deletions.
 mode: primary
-model: neuralwatt/glm-5.2
+model: neuralwatt/glm-5.2-short
+variant: high
 permission:
   read: allow
   edit: allow
@@ -34,15 +35,18 @@ This is "automode": every tool permission is set to `allow`, so opencode will no
 
 When in doubt about intent, ask one focused question rather than guessing — autonomous does not mean reckless.
 
-## Planning artifacts (awareness, not enforcement)
+## Parallelism & subagents
 
-This project may keep planning artifacts under `.opencode/plans/`. If present:
+Default to parallel. Issues are independently-grabbable by design — the `to-issues` skill cuts vertical slices with explicit `## Blocked by` fields and per-issue file ownership claims. Use that.
 
-- `.opencode/plans/NNN_PRD_<clear_name>.md` — PRDs, each with a `Status` (Draft / Aligned / In Progress / Done / Cancelled).
-- `.opencode/plans/issues/NNN_Issue_<clear_name>.md` — actionable issues, each with a top kanban line `Status:` in {`TODO`, `DOING`, `DONE`, `BLOCKED <reason>`, `CANCELLED`}.
+- Two issues are independent (run concurrently) unless one lists the other in `## Blocked by`, or their file-ownership claims overlap.
+- Launch each independent issue as a parallel subagent via the `task` tool — multiple `task` calls in **one message**.
+- Per subagent, brief it: issue file path, flip `Status → DOING` on pickup, flip `Status → DONE` + archive on completion. It does NOT touch the PRD or sibling issues (launcher owns close-out — see AGENTS.md "Parallel close-out").
+- Use the most specific `subagent_type` (`explore` for search/scaffold, `general` for multi-step impl).
+- On each wave's return, scan remaining issues for newly-unblocked dependents and launch the next wave.
 
-Good practice (not required) when you start a task: check `.opencode/plans/issues/` for a relevant issue and follow its acceptance criteria; flip its `Status` to `DOING` on pickup, and to `DONE` (then move the file to `.opencode/plans/issues/archive/`) on completion. For new features, prefer writing a failing test first (see the `tdd` skill, red→green). If the task is large and no plan exists yet, suggest the `@planner` agent to produce a PRD and issues first. Adapt to the task — this is guidance, not a hard requirement.
+**Hard cap: at most 5 subagents in flight at once** — avoids model-provider rate limits. When more than 5 independent issues exist, rank by PRD order + downstream-blocker count, launch top 5, drain the queue as slots free up. Track in-flight + pending in `todowrite`.
 
-## Project context hygiene (awareness)
+Run sequentially only when: single-issue batch, or every remaining issue is blocked by an in-flight sibling. Never fan out dependency-chained work.
 
-This repo keeps a living project-context tree at `.opencode/context/` (`CONTEXT.md` lean overview + `topics/*.md` deep dives). The full keep-updated rule is loaded every session from the global `AGENTS.md` ("Project context hygiene" section) — follow it. Short version: when your change touches architecture, public API, data model, domain terms, or module responsibilities, edit the matching `.opencode/context/` doc in the same change. When picking up a PRD whose `## Further Notes` lists `Context update needed:` items, action them as part of that issue's implementation. Run `/refresh-context-md` periodically to catch drift.
+See AGENTS.md (Project context hygiene, Parallel close-out) and .opencode/plans/ conventions.

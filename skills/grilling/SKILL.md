@@ -11,11 +11,13 @@ Ask the questions one at a time, waiting for feedback on each question before co
 
 If a question can be answered by exploring the codebase, explore the codebase instead — read code, check existing patterns, ADRs, and domain terminology, then propose an answer grounded in what you found.
 
+Use existing question tools at your disposition.
+
 ## Goal of the phase
 
 Reach a shared understanding of:
 
-1. **The problem** being solved and who it serves (user-facing, not implementation-facing)
+1. **The problem** being solved and who it serves (user-facing, not implementation-facing). Focus on the WHY, deeply understand the fundamental reasons for the feature to be able to properly design it. Ask as many questions as needed to ensure proper alignement.
 2. **The solution shape** at the highest useful level (not layer-by-layer)
 3. **The seams** where the feature will be tested (prefer existing seams, highest seam possible, ideally one)
 4. **Risks & dependencies** that could derail implementation
