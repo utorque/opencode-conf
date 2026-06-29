@@ -27,7 +27,7 @@ The keep-updated hygiene rule is **not** bootstrapped here — it lives in the g
 ```markdown
 # Project Context
 
-> Lean always-on overview. Deep material lives in `topics/` (loaded on demand via the `@` refs below) and the roadmap lives in `.opencode/plans/`. Rules live in `AGENTS.md`. Keep this file ~1-2 KB.
+> Lean always-on overview. Deep material lives in `topics/` (loaded on demand via the `@` refs below) and the roadmap lives in `.opencode/plans/`. Rules live in `AGENTS.md`. Keep this file lean enough to load every session, but long enough to convey the project's overall context — a fresh agent reading only this file should grasp what the project is, how it's shaped, and the key domain terms.
 
 - **Product**: <one line — what this is, who it's for>
 - **Actors**: <end-users, services, integrators>
@@ -76,7 +76,7 @@ Scan the repo to fill the CONTEXT.md template placeholders. Use the `Read`/`Glob
 - Existing `AGENTS.md` / `.cursor/rules/` / `CONTRIBUTING.md` for any stated conventions or domain terms (do NOT duplicate — just reference).
 - `.opencode/plans/` PRDs for current focus / active epic.
 
-Fill every `<...>` placeholder. Keep CONTEXT.md ~1-2 KB — be terse. If a section has no real content from the repo, leave the placeholder with a short `TODO: <what's missing>` note rather than inventing.
+Fill every `<...>` placeholder. Keep CONTEXT.md lean — terseness over padding — but complete enough that a fresh agent reading only this file grasps the project's overall context (product, actors, architecture, module map, domain terms). When in doubt, favor completeness over brevity; this file is the session's only always-loaded map of the project. If a section has no real content from the repo, leave the placeholder with a short `TODO: <what's missing>` note rather than inventing.
 
 For each major concern discovered (data model, auth module, a big feature) that warrants its own deep doc, create `topics/<concern>.md` with a one-line purpose statement + the detail you gathered, and make sure CONTEXT.md's "Deep dives" section has an `@.opencode/context/topics/<concern>.md` ref for it.
 

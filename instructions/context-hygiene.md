@@ -1,6 +1,6 @@
 # Project context hygiene
 
-This project keeps a living project-context tree under `.opencode/context/` (sibling of `.opencode/plans/`). The lean `CONTEXT.md` overview loads every session via the global `opencode.json` `instructions:` array; deeper material lives in `.opencode/context/topics/*.md`, loaded on demand via `@` path refs in CONTEXT.md.
+This project keeps a living project-context tree under `.opencode/context/` (sibling of `.opencode/plans/`). The lean `CONTEXT.md` overview loads every session via the global `opencode.json` `instructions:` array; deeper material lives in `.opencode/context/topics/*.md`, loaded on demand via `@` path refs in CONTEXT.md. Keep CONTEXT.md lean enough to load every session, but long enough to convey the project's overall context — a fresh agent reading only this file should grasp what the project is, how it's shaped, and the key domain terms. Favor completeness over brevity when the two conflict; this file is the session's only always-loaded map.
 
 ### You MUST update context docs
 
