@@ -8,12 +8,12 @@
 
 ## Architecture
 
-`opencode.jsonc` is the single source of truth: it registers the plugin array, the always-on `instructions:` array (loaded in order), the permission matrix, and agent overrides (`plan` agent disabled in favor of the custom `planner` agent). The `instructions:` array loads, in order: `AGENTS.md` (index) → `instructions/caveman.md` → `instructions/context-mode.md` → `instructions/context-hygiene.md` → this file. Rules are always-on; agents are thin orchestrators that **reference** skills rather than paraphrase them — skill bodies under `skills/*/SKILL.md` are the single source of truth for workflow detail. The planning + context trees (`.opencode/plans/`, `.opencode/context/`) are runtime-edited by skills and the `refresh-context-md` command, not hand-curated rules.
+`opencode.jsonc` is the single source of truth: it registers the plugin array, the always-on `instructions:` array (loaded in order), the permission matrix, and agent overrides (`plan` agent disabled in favor of the custom `planner` agent). The `instructions:` array loads, in order: `AGENTS.md` (index) → `instructions/caveman.md` → `instructions/user-preferences.md` → `instructions/context-mode.md` → `instructions/context-hygiene.md` → this file. Rules are always-on; agents are thin orchestrators that **reference** skills rather than paraphrase them — skill bodies under `skills/*/SKILL.md` are the single source of truth for workflow detail. The planning + context trees (`.opencode/plans/`, `.opencode/context/`) are runtime-edited by skills and the `refresh-context-md` command, not hand-curated rules.
 
 Module map:
 - `opencode.jsonc` — single source of truth: plugins, always-on instructions order, permission matrix, agent overrides.
 - `AGENTS.md` — entry-point index; points at rule files + planning/context trees. Loaded first.
-- `instructions/` — always-on rule files (`caveman.md`, `context-mode.md`, `context-hygiene.md`).
+- `instructions/` — always-on rule files (`caveman.md`, `user-preferences.md`, `context-mode.md`, `context-hygiene.md`).
 - `agents/*.md` — per-agent role/phase/permission definitions (`planner`, `build`, `automode`, `multimodal`).
 - `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`).
 - `commands/*.md` — slash-command definitions (`refresh-context-md`, `project-status`).
@@ -32,13 +32,14 @@ Module map:
 - **opencode**: the agentic-coding CLI/runtime this repo configures.
 - **Agent**: a named role/phase/permission profile (`planner`, `build`, `automode`, `multimodal`). Primary agents run top-level; `multimodal` is a hidden subagent.
 - **Skill**: a workflow body under `skills/*/SKILL.md` (single source of truth). Agents reference skill bodies; they do not paraphrase them.
-- **Instruction**: an always-on rule file loaded by the `opencode.jsonc` `instructions:` array (caveman, context-mode, context-hygiene).
+- **Instruction**: an always-on rule file loaded by the `opencode.jsonc` `instructions:` array (caveman, user-preferences, context-mode, context-hygiene).
 - **PRD**: Product Requirements Document at `.opencode/plans/NNN_PRD_<slug>.md`. Lifecycle state machine: `Draft → Aligned → Done` (managed by `to-prd` skill).
 - **Issue**: a tracer-bullet vertical slice at `.opencode/plans/issues/NNN_Issue_<slug>.md`. Lifecycle: `TODO → DOING → DONE → BLOCKED|CANCELLED` (managed by `to-issues` skill).
 - **Tracer bullet / vertical slice**: a single end-to-end slice of a feature, independently grabbable by one agent.
 - **Grilling**: the alignment interview (`/grilling`) that stress-tests a feature design before a PRD exists.
 - **Done-gate** (PRD 001): an issue may not move `→ DONE` until `.opencode/context/` has been refreshed for any architecture/API/data-model shift.
 - **Caveman mode**: terse-model-output compression (drops articles/filler, keeps technical substance). Single full level. Tracked by the always-on rule file `instructions/caveman.md` (no runtime plugin).
+- **Be critical posture**: standing instruction (in `instructions/user-preferences.md`) for all agents to flag concrete technical flaws and design-taste concerns, flag-once-then-execute, with soft opt-out via phrases like "just do it". Complements caveman (compression) and grilling (plan-phase interviews).
 - **context-mode**: MCP tool layer that protects the context window — large outputs routed through a sandbox and indexed to an FTS5 knowledge base; raw bytes never enter the conversation.
 - **Parallel close-out**: when a launcher fans out multiple issues as concurrent subagents, the launcher owns close-out and flips the PRD `→ Done` once no non-archived issue siblings remain.
 

@@ -65,21 +65,20 @@ On entering planner for a project, make sure `.opencode/plans/`, `.opencode/plan
 
 Follow the `grilling` skill. Exit gate: user confirms alignment.
 
-Explore the codebase to ground every question. If a question can be answered by reading code, read code instead of asking. Delegate heavier codebase comprehension to the `explore` subagent when useful.
+Explore the codebase to ground every question. If a question can be answered by reading code, read code instead of asking. Delegate heavier codebase comprehension to the `explore` subagent when useful. You may use the `question` tool for this phase.
 
 ### Phase 1b — Choose the next step
 
-Once alignment is confirmed, present the user with a choice of where to go next, in plain text (NOT via the `question` tool — let the user reply naturally in their next message):
+Once alignment is confirmed, present the user with a choice of where to go next, in plain text (NOT via the `question` tool for this phase — let the user reply naturally in their next message):
 
 - **(a) Write the PRD + decompose into issues** — proceed to Phase 2 (PRD) then Phase 3 (issues), producing the planning artifacts under `.opencode/plans/`.
 - **(b) Skip the artifacts and hand off** — stop here; the shared understanding from grilling is enough. Recommend the user switch to `build` or `automode` to start implementation directly.
-
-State both options in one short message and stop. Wait for the user's reply before proceeding. Do not call `question`, do not assume (a), and do not start writing the PRD until the user explicitly picks (a) or signals they want artifacts.
 
 If the user signals direct implementation (e.g. 'GO', 'proceed', 'just do it', 'skip the artifacts'), treat the session as having switched to automode. Yield: produce a one-line handoff note pointing at the alignment summary, then stop. The user must switch agent in the TUI to start coding — planner's edit permissions still deny source code.
 
 ### Phase 2 — PRD
 
+From this phase onwards, you may use the `question` tool again.
 Follow the `to-prd` skill. Exit gate: PRD file written with `Status: Draft`, then user signs off → `Status: Aligned`.
 
 Reminder: PRD Status enum is `Draft → Aligned → Done → Cancelled` (no `In Progress`).

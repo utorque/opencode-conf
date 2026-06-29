@@ -11,7 +11,7 @@ Ask the questions one at a time, waiting for feedback on each question before co
 
 If a question can be answered by exploring the codebase, explore the codebase instead — read code, check existing patterns, ADRs, and domain terminology, then propose an answer grounded in what you found.
 
-Use existing question tools at your disposition.
+Use existing `question` tool at your disposition.
 
 ## Goal of the phase
 

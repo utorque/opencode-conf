@@ -19,6 +19,7 @@ If a task's **rationale or objective is missing or unclear** — why it matters,
 ## Rule files (always-on)
 
 - [instructions/caveman.md](./instructions/caveman.md) — caveman tone/verbosity mode.
+- [instructions/user-preferences.md](./instructions/user-preferences.md) — code-style defaults + standing "be critical" push-back posture.
 - [instructions/context-mode.md](./instructions/context-mode.md) — context-mode MCP routing rules (BLOCKED / REDIRECTED).
 - [instructions/context-hygiene.md](./instructions/context-hygiene.md) — `.opencode/context/` upkeep rules.
 

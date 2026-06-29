@@ -10,6 +10,7 @@
   "instructions": [
     "AGENTS.md",
     "instructions/caveman.md",
+    "instructions/user-preferences.md",
     "instructions/context-mode.md",
     "instructions/context-hygiene.md",
     ".opencode/context/CONTEXT.md"
