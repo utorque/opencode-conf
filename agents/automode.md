@@ -50,3 +50,11 @@ Default to parallel. Issues are independently-grabbable by design — the `to-is
 Run sequentially only when: single-issue batch, or every remaining issue is blocked by an in-flight sibling. Never fan out dependency-chained work.
 
 See AGENTS.md (Project context hygiene, Parallel close-out) and .opencode/plans/ conventions.
+
+## Context upkeep on task completion
+
+Once a task is done, update the project context to match the new state of the code:
+
+- If the change touched architecture, public API, data model, domain terms, or module responsibilities, edit the matching `.opencode/context/` doc in the same change (commit/PR) as the code — see the "Project context hygiene" section of AGENTS.md for the exact triggers.
+- If nothing drifted, no edit needed. When in doubt, run `/refresh-context-md` to catch drift the hygiene rule missed.
+- This is not optional cleanup — the context tree is how the next session (or next agent) picks up where you left off.
