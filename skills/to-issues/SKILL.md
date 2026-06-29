@@ -14,6 +14,7 @@ Break a plan into independently-grabbable issues using vertical slices (tracer b
 - `NNN` is the next zero-padded sequence number. Scan `.opencode/plans/issues/` for existing `NNN_Issue_*.md` files (do not scan `archive/`) and pick the next free number. Start at `000` if none exist.
 - Each issue begins with a kanban **Status** line (allowed values: `TODO`, `DOING`, `DONE`, `BLOCKED <one-line reason>`, `CANCELLED`)
 - When an issue is DONE or CANCELLED, move its file to `.opencode/plans/issues/archive/`
+- **DONE gate (unconditional):** before flipping `Status → DONE`, the issue's `## Close-out` checkbox (see template below) must be ticked. The checkbox requires `.opencode/context/` to be refreshed via `/refresh-context-md`. This is unconditional — every issue runs the refresh before DONE, including cosmetic/internal/test-only/docs-only changes; if nothing drifted, the command's drift-patch phase produces no diff and the gate passes as a no-op. The judgment of whether a context *edit* is needed stays in [context-hygiene.md](../../instructions/context-hygiene.md); the gate only enforces that a refresh was run.
 - Reference the parent via its PRD file name, and sibling issues by their file names (e.g. `Blocked by: 002_Issue_export-profile-api.md`)
 
 ## Process
@@ -99,6 +100,12 @@ Do NOT write all tests up front (that is horizontal slicing — an anti-pattern)
 - `NNN_Issue_<sibling_clear_name>.md` (if any)
 
 Or "None — can start immediately" if no blockers.
+
+## Close-out
+
+Tick before `Status → DONE` (unconditional gate — see [context-hygiene.md](../../instructions/context-hygiene.md)):
+
+- [ ] `.opencode/context/` refreshed via `/refresh-context-md`
 
 </issue-template>
 

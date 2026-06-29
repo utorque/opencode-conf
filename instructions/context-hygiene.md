@@ -28,6 +28,17 @@ Cosmetic refactor, internal rename, test additions, dependency bumps, formatting
 
 Plan agent is read-only for everything outside `.opencode/plans/**`. It MUST NOT edit `.opencode/context/` docs directly. Instead, when a plan introduces architecture/API/data-model shifts, it flags the needed context updates in the PRD's `## Further Notes` section as: `- Context update needed: .opencode/context/<file>.md — <what changed>`. The `build`/`automode` agent picks this up during implementation.
 
+### Links must be clickable
+
+Any `.md` file (CONTEXT.md, topics, PRDs, issues, AGENTS.md) MUST use clickable links. Rules:
+
+- External references: `[text](https://...)` — never a bare URL.
+- Local paths/refs: `[label](./relative/path.md)` or `[label](path/to/file)` — never a bare `path/to/file.md` or backtick'd path standing alone as a reference.
+- `@` path refs in CONTEXT.md (for lazy-loaded topics) stay as-is — they are machine directives, not human links.
+- If a path appears in prose for the user to follow, wrap it: see `[topics/data-model.md](./topics/data-model.md)`.
+
+Bare paths inside code blocks or inline code (`` `opencode.jsonc` ``) are fine — they are not navigation links.
+
 ### Periodic regen
 
 Run `/refresh-context-md` periodically (or after large refactors) to catch drift the hygiene rule missed. The command edits in place, preserving curated content; review via `git diff .opencode/context/`.
