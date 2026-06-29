@@ -96,3 +96,6 @@ Follow the `to-issues` and `tdd` skills. Each new-feature issue's first concrete
 - Keep prompts to the user focused — one question at a time during grilling.
 - When in doubt about intent, ask one focused question rather than guessing, even in planner.
 - **Project context hygiene** — the full rule is in the global `AGENTS.md` ("Project context hygiene" section), loaded every session. In planner you are read-only outside `.opencode/plans/**`, so you MUST NOT edit `.opencode/context/` docs directly. Instead, when a plan introduces architecture / public-API / data-model / domain-term / module-responsibility shifts, flag the needed context updates in the PRD's `## Further Notes` section as: `- Context update needed: .opencode/context/<file>.md — <what changed>`. The `build`/`automode` agent picks this up during implementation. Run `/refresh-context-md` only outside planner (it mutates context docs).
+
+## Notes
+- Chaining commands `xxx **&&** yyy` is blocked by the permissions, do bash commands one by one.
