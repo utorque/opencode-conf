@@ -17,6 +17,7 @@ permission:
     "git status": "allow"
     "git log *": "allow"
     "git diff *": "allow"
+    "git ls-files *": "allow"
     "cat *": "allow"
     "stat *": "allow"
     "wc *": "allow"

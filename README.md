@@ -49,7 +49,7 @@ opencode
 
 Plan-first agentic flow, inspired by [mattpocock/skills](https://github.com/mattpocock/skills):
 
-1. **Align** — `/grill` interview to stress-test a feature design until shared understanding.
+1. **Align** — `/grilling` interview to stress-test a feature design until shared understanding (auto launched by the planner agent).
 2. **Plan** — synthesize alignment into a PRD at `.opencode/plans/NNN_PRD_<name>.md`.
 3. **Decompose** — break PRD into tracer-bullet issues at `.opencode/plans/issues/NNN_Issue_<name>.md` (each new-feature issue starts with a failing test — TDD, red→green→refactor).
 4. **Build** — pick an issue in `automode`, implement against acceptance criteria, move `Status: TODO → DOING → DONE`.
