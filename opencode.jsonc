@@ -3,7 +3,6 @@
   // Consolidated from opencode.json + opencode.jsonc (2026-06-29).
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "./plugins/caveman/plugin.js",
     "cc-safety-net",
     "context-mode"
   ],

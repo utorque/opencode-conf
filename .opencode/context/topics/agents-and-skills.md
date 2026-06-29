@@ -19,7 +19,6 @@ Permission matrix lives per-agent in the file frontmatter. Permissions policy at
 
 Workflow single source of truth. Agents **reference** skill bodies; they do NOT paraphrase them. Loaded via `permission.skill.*: allow` + `/skill` tool (or implicit instruction body). Skill families:
 
-- **caveman family** — terse-mode compression skills. `caveman` (mode), `caveman-commit`, `caveman-compress`, `caveman-help`, `caveman-review`, `caveman-stats`. Most have a brief `README.md` alongside `SKILL.md`.
 - **planning family** — `grilling` (alignment interview), `to-prd` (synthesize PRD), `to-issues` (decompose PRD into tracer-bullet issues).
 - **tdd** — red-green-refactor; default approach for new-feature issues.
 - **pdf** — PDF read/write/merge/split/OCR; under `skills/pdf/` carries `forms.md`, `reference.md`, `scripts/`.

@@ -2,27 +2,6 @@
 
 > Runtime plugins registered in `opencode.jsonc`'s `plugin:` array.
 
-## `plugins/caveman/plugin.js` (local)
-
-Runtime mode tracker. Gitignored; installed by `install_plugins.sh` (clones JuliusBrussee/caveman, runs its `bin/install.js --only opencode`, then prunes the dropped `cavecrew-*.md` agents + `caveman-*.md` commands — keeping only skills).
-
-Responsibilities (dynamic state only — ruleset is separate, in `instructions/caveman.md`):
-- Writes mode flag at session init (`.caveman-active`, gitignored).
-- Parses user messages for `/caveman` commands + natural-language toggles ("talk like caveman", "less tokens", "be brief").
-- Injects per-turn reinforcement into the system prompt.
-
-Hook mapping (opencode >= 1.15.x): `event` (`session.created` type), `chat.message`, `experimental.chat.system.transform`.
-
-Layout:
-```
-plugins/caveman/
-├── package.json        (name: caveman-opencode-plugin, ESM, private)
-├── plugin.js           (hook handlers)
-└── caveman-config.cjs   (symlink-safe flag-write helpers)
-```
-
-Six intensity levels: `lite` | `full` (default) | `ultra` | `wenyan-lite` | `wenyan-full` | `wenyan-ultra`. Toggle: `/caveman <level>` or `stop caveman` / `normal mode`.
-
 ## `cc-safety-net` (external)
 
 Safety rails for destructive ops. Installed via `opencode plugin -g cc-safety-net` in `install_plugins.sh`.

@@ -20,7 +20,6 @@ cd ~/.config/opencode
 This installs:
 - **[bun](https://bun.sh)** — JS runtime
 - **cc-safety-net** — opencode plugin
-- **caveman** — terse-mode plugin (compresses model output ~65-75%)
 - **context-mode** — auto-installs itself via opencode on first launch
 
 ### 3. Install deps
@@ -41,9 +40,10 @@ opencode
 
 | Plugin | What it does |
 |--------|--------------|
-| **caveman** (`./plugins/caveman/plugin.js`) | Compresses model responses to caveman-style prose. Drops articles/filler, keeps all technical substance. Six intensity levels (`lite`/`full`/`ultra`/`wenyan-*`). Toggle via `/caveman`. |
 | **cc-safety-net** | Safety rails for destructive ops. |
 | **context-mode** | Protects context window: routes large outputs through a sandbox, auto-indexes to a searchable knowledge base (FTS5). Run `ctx stats` / `ctx doctor` / `ctx purge`. |
+
+Caveman terse-output ruleset: always-on instruction at `instructions/caveman.md` (no plugin).
 
 ## Workflow
 
@@ -66,7 +66,6 @@ Plan-first agentic flow, inspired by [mattpocock/skills](https://github.com/matt
 ### Skills
 
 Custom slash commands + specialized workflows under `skills/`:
-- **caveman** family — `/caveman`, `/caveman-commit`, `/caveman-review`, `/caveman-stats`, `/caveman-compress`, `/caveman-help`
 - **planning** — `/grilling`, `/to-prd`, `/to-issues`
 - **tdd** — red-green-refactor
 - **pdf** — PDF read/write/merge/split/OCR

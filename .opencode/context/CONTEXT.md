@@ -15,10 +15,9 @@ Module map:
 - `AGENTS.md` — entry-point index; points at rule files + planning/context trees. Loaded first.
 - `instructions/` — always-on rule files (`caveman.md`, `context-mode.md`, `context-hygiene.md`).
 - `agents/*.md` — per-agent role/phase/permission definitions (`planner`, `build`, `automode`, `multimodal`).
-- `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`caveman*`, `grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`). Brief `README.md` in caveman-family skills.
+- `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`).
 - `commands/*.md` — slash-command definitions (`refresh-context-md`, `project-status`).
-- `plugins/caveman/` — runtime caveman-mode tracker plugin (gitignored; installed by `install_plugins.sh`).
-- `install_plugins.sh` — bootstrap: bun, `cc-safety-net`, caveman; prunes caveman agent/command shims (keeps only skills).
+- `install_plugins.sh` — bootstrap: bun, `cc-safety-net`. (context-mode auto-installs via opencode.)
 - `.opencode/plans/` — roadmap: `NNN_PRD_<slug>.md` + `issues/NNN_Issue_<slug>.md` (+ `archive/`).
 - `.opencode/context/` — this living project-context tree (you are here).
 - `context-mode/` — MCP server runtime data (sessions); gitignored.
@@ -39,7 +38,7 @@ Module map:
 - **Tracer bullet / vertical slice**: a single end-to-end slice of a feature, independently grabbable by one agent.
 - **Grilling**: the alignment interview (`/grilling`) that stress-tests a feature design before a PRD exists.
 - **Done-gate** (PRD 001): an issue may not move `→ DONE` until `.opencode/context/` has been refreshed for any architecture/API/data-model shift.
-- **Caveman mode**: terse-model-output compression (drops articles/filler, keeps technical substance). Six intensity levels. Tracked by the plugin + ruleset.
+- **Caveman mode**: terse-model-output compression (drops articles/filler, keeps technical substance). Single full level. Tracked by the always-on rule file `instructions/caveman.md` (no runtime plugin).
 - **context-mode**: MCP tool layer that protects the context window — large outputs routed through a sandbox and indexed to an FTS5 knowledge base; raw bytes never enter the conversation.
 - **Parallel close-out**: when a launcher fans out multiple issues as concurrent subagents, the launcher owns close-out and flips the PRD `→ Done` once no non-archived issue siblings remain.
 
