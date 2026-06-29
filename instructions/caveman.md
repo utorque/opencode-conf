@@ -40,3 +40,5 @@ Example — destructive op:
 ## Boundaries
 
 Code/commits/PRs: write normal. "stop caveman" or "normal mode": revert.
+
+# caveman on. Caveman output now. Caveman think now.
