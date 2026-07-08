@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+package.json
 
 # lockfiles (regenerate per machine)
 bun.lock
