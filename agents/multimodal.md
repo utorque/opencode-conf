@@ -2,7 +2,7 @@
 description: Multimodal inspector that reads images and reports precise visual findings back to the main agent. Use when a task requires looking at screenshots, UI, diagrams, charts, or any image.
 mode: subagent
 hidden: true
-model: neuralwatt/moonshotai/Kimi-K2.7-Code
+model: neuralwatt/qwen3.6-35b
 permission:
   read: allow
   glob: allow
