@@ -19,8 +19,8 @@ cd ~/.config/opencode
 
 This installs:
 - **[bun](https://bun.sh)** — JS runtime
-- **cc-safety-net** — opencode plugin
-- **context-mode** — auto-installs itself via opencode on first launch
+- **cc-safety-net** — flags and blocks dangerous commands
+- **context-mode** — context management plugin that allows the model to fetch only what it needs instead of everything, minimizing context poisoning
 
 ### 3. Install deps
 
