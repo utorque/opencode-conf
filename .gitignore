@@ -7,7 +7,7 @@ bun.lock
 package-lock.json
 
 # runtime state
-context-mode/sessions/
+context-mode/
 
 # installed plugins — reproduced by install_plugins.sh
 plugins/
