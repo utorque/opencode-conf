@@ -20,7 +20,6 @@ cd ~/.config/opencode
 This installs:
 - **[bun](https://bun.sh)** — JS runtime
 - **cc-safety-net** — flags and blocks dangerous commands
-- **context-mode** — context management plugin that allows the model to fetch only what it needs instead of everything, minimizing context poisoning
 
 ### 3. Install deps
 
@@ -41,7 +40,6 @@ opencode
 | Plugin | What it does |
 |--------|--------------|
 | **cc-safety-net** | Safety rails for destructive ops. |
-| **context-mode** | Protects context window: routes large outputs through a sandbox, auto-indexes to a searchable knowledge base (FTS5). Run `ctx stats` / `ctx doctor` / `ctx purge`. |
 
 Caveman terse-output ruleset: always-on instruction at `instructions/caveman.md` (no plugin).
 

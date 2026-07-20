@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # install_plugins.sh — bootstrap opencode config: bun, cc-safety-net.
-# context-mode auto-installs itself via opencode; not handled here.
 #
 # Run from the repo root after a fresh clone, before first opencode launch.
 set -euo pipefail
@@ -22,4 +21,4 @@ command -v opencode >/dev/null 2>&1 || {
 }
 opencode plugin -g cc-safety-net
 
-echo "==> done. context-mode installs itself automatically via opencode."
+echo "==> done."

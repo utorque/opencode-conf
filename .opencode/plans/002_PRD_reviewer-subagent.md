@@ -18,7 +18,7 @@ but there is **no isolated second-pass reviewer**:
 - No structured artifact recording *what was reviewed* lives next to the issue.
 
 The gap surfaced when comparing the config against the two Anthropic docs (see session
-memory, decisions captured 2026-06-29). The config covers compaction (via context-mode KB),
+memory, decisions captured 2026-06-29). The config covers
 sub-agent isolation (via automode fan-out), right-altitude prompts (thin agents), and
 stop conditions (concurrency cap 5) — but the evaluator-optimizer pattern is the one
 principle largely absent.
@@ -65,8 +65,6 @@ Returned to caller, pasted verbatim into `## Review`:
 - [pass|fail] Plans hygiene — issue file path valid, `Status:` header present, no
             writes outside .opencode/plans/** by planner (build/automode may edit
             source — that is allowed).
-- [pass|fail] Context-mode routing followed — raw bulk bytes not leaked inline when a
-            sandbox/index path existed.
 
 ### Taste notes (advisory)
 - <bullet> ...
@@ -84,7 +82,7 @@ Returned to caller, pasted verbatim into `## Review`:
 
 To be authored in implementation. Must be **thin** (mirrors `multimodal.md` style —
 role one-liner + delegation protocol), with the rubric specified inline as the
-structured format above. The 5 invariant checks and their evidence requirements live
+structured format above. The 4 invariant checks and their evidence requirements live
 in the agent file, not a skill — see `## Open questions` Q3.
 
 ## Risks & dependencies
@@ -96,9 +94,8 @@ in the agent file, not a skill — see `## Open questions` Q3.
 - **Reviewer must read the same facts as implementer without inheriting dirty context.**
   Pattern: caller passes issue file path + diff + changed-file list as Task-prompt
   inputs; reviewer re-derives truth from disk. Risk: reviewer re-reads large diffs
-  inline → context pollution. Mitigation: caller passes *paths*, reviewer uses
-  context-mode `ctx_execute_file` / `ctx_batch_execute` to derive evidence, surfaces
-  only the verdict.
+  inline → context pollution. Mitigation: caller passes *paths*; reviewer reads only
+  the specific files/line ranges the rubric names and surfaces only the verdict.
 - **1-iteration BLOCK may stall on minor issues.** Accepted — pair with "ask one
   focused question" rule. If friction grows, revisit to 2-iteration cap.
 - **Tautological self-check risk:** "no writes outside .opencode/plans/**" only makes
@@ -107,8 +104,8 @@ in the agent file, not a skill — see `## Open questions` Q3.
   the case here, since reviewer only gates issues owned by build/automode). Needs
   rewording — see Q4.
 - **Opencode subagent contract unknown.** Whether hidden subagents can be named
-  arbitrarily in `subagent_type`, whether they get the tool allow-list, whether
-  Task tool passes context-mode MCP access — **not verified**. See Q1.
+  arbitrarily in `subagent_type`, whether they get the tool allow-list — **not
+  verified**. See Q1.
 
 ## Out of scope
 
@@ -133,11 +130,9 @@ answers from user / opencode docs:
   + adding it to `opencode.jsonc` `agent` block? Or is the registry elsewhere?
 - (b) Does `subagent_type: "reviewer"` work in the Task tool, or must it match a
   fixed opencode-builtin enum?
-- (c) Does the reviewer subagent inherit `context-mode` MCP tools (the BLOCKED /
-  REDIRECTED rule set), or are MCP tools unavailable in subagents?
-- (d) Permission matrix: does the reviewer need its own `permission` block in
+- (c) Permission matrix: does the reviewer need its own `permission` block in
   `opencode.jsonc` (read-only? allow Task? allow grep/glob/read)?
-- (e) Does the reviewer get caveman / user-preferences / context-mode instructions
+- (d) Does the reviewer get caveman / user-preferences instructions
   auto-loaded, or only `agents/reviewer.md`?
 
 **Recommendation**: delegate to `explore` subagent or read opencode docs off-session.
@@ -152,8 +147,7 @@ Reviewer needs ground truth. Open: does it
 (a) = independent, more expensive, may hit bash permission rules.
 (b) = cheap but trusts the implementer — defeats isolation partially.
 
-**Recommendation**: (a) for invariant 4 (plans hygiene) and 5 (context-mode routing,
-which is structural — checks the diff proves raw bytes weren't inlined), (b) for the
+**Recommendation**: (a) for invariant 4 (plans hygiene); (b) for the
 done-gate shift-detection since it requires judgement the implementer already made.
 Resolve with user.
 

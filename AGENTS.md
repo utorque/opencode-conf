@@ -9,10 +9,9 @@ auto-include directives — the `instructions:` array does the loading.
 
 This config tunes [opencode](https://opencode.ai) for **token-efficient, plan-first agentic coding**. Priorities, in order:
 
-1. **Protect the context window** — large outputs routed through a sandbox and indexed (context-mode), model responses compressed (caveman). Raw bytes never enter conversation unless needed for an edit.
-2. **Plan before build** — every non-trivial feature goes through align → plan → decompose → build. `/grilling` stress-tests understanding before a PRD exists.
-3. **Parallel by default** — issues are independently-grabbable vertical slices; the launcher fans them out as concurrent subagents and owns close-out.
-4. **Living context** — `.opencode/context/` mirrors the codebase and is updated in the same change as code when architecture/API/data model shifts.
+1. **Plan before build** — every non-trivial feature goes through align → plan → decompose → build. `/grilling` stress-tests understanding before a PRD exists.
+2. **Parallel by default** — issues are independently-grabbable vertical slices; the launcher fans them out as concurrent subagents and owns close-out.
+3. **Living context** — `.opencode/context/` mirrors the codebase and is updated in the same change as code when architecture/API/data model shifts.
 
 If a task's **rationale or objective is missing or unclear** — why it matters, what success looks like, who/what it serves — you MUST invoke [`/grilling`](./skills/grilling/SKILL.md) to interview the user until the "why" is shared before designing or building. Do not guess the why.
 
@@ -20,7 +19,6 @@ If a task's **rationale or objective is missing or unclear** — why it matters,
 
 - [instructions/caveman.md](./instructions/caveman.md) — caveman tone/verbosity mode.
 - [instructions/user-preferences.md](./instructions/user-preferences.md) — code-style defaults + standing "be critical" push-back posture.
-- [instructions/context-mode.md](./instructions/context-mode.md) — context-mode MCP routing rules (BLOCKED / REDIRECTED).
 - [instructions/context-hygiene.md](./instructions/context-hygiene.md) — `.opencode/context/` upkeep rules.
 
 ## Planning & context trees
