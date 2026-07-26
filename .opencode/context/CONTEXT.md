@@ -4,7 +4,7 @@
 
 - **Product**: A personal [opencode](https://opencode.ai) configuration repo (`~/.config/opencode`), git-synced across machines and treated as a reusable reference. Tuned for token-efficient, plan-first agentic coding: protect the context window, plan before build, parallel by default, living context.
 - **Actors**: the single user (owner); the opencode CLI/runtime (primary consumer of this config); four agents — `planner` (read-only planning, primary), `build` (one-issue implementer, primary), `automode` (autonomous, primary), `multimodal` (visual inspection subagent). External plugins: `cc-safety-net`.
-- **Tech stack**: opencode config (JSON / JSONC / Markdown). JS plugins run on [Bun](https://bun.sh); only runtime dep is `@opencode-ai/plugin` (pinned `1.17.9`). No datastore. No deploy target — this IS the deploy artifact (consumed in place by opencode).
+- **Tech stack**: opencode config (JSON / JSONC / Markdown). JS plugins run on [Bun](https://bun.sh). Plugin array: `cc-safety-net` (external, safety rails) + `@opencode-ai/plugin` (runtime dep, pinned in `package.json`). No datastore. No deploy target — this IS the deploy artifact (consumed in place by opencode).
 
 ## Architecture
 
@@ -16,15 +16,22 @@ Module map:
 - `instructions/` — always-on rule files (`caveman.md`, `user-preferences.md`, `context-hygiene.md`).
 - `agents/*.md` — per-agent role/phase/permission definitions (`planner`, `build`, `automode`, `multimodal`).
 - `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`).
-- `commands/*.md` — slash-command definitions (`refresh-context-md`, `project-status`).
-- `install_plugins.sh` — bootstrap: bun, `cc-safety-net`.
 - `.opencode/plans/` — roadmap: `NNN_PRD_<slug>.md` + `issues/NNN_Issue_<slug>.md` (+ `archive/`).
 - `.opencode/context/` — this living project-context tree (you are here).
+- `commands/`, `install_plugins.sh` — bootstrap/utility.
 
 ### Deep dives (loaded on demand — read with the Read tool when the task touches them)
 - @.opencode/context/topics/agents-and-skills.md
 - @.opencode/context/topics/plan-lifecycle.md
-- @.opencode/context/topics/plugins.md
+
+## Design decisions
+
+Non-obvious WHY behind the config shape (rationale, not mechanism). Only record decisions directly stated by the user or captured in a PRD; rephrase as needed for clarity. If unsure whether a rationale is a validated decision, do not add or edit it — ask the user first.
+- **Custom `planner` over builtin `plan`**: `agent.plan.disable: true` — read-only scope enforced per-phase, plan agent can't drift into edits.
+- **Agents reference skills, don't paraphrase**: skill bodies under `skills/*/SKILL.md` are single source of truth; paraphrasing drifts (PRD 000 reconciled this).
+- **Done-gate on context** (PRD 001): an issue may not flip `→ DONE` until `.opencode/context/` reflects any architecture/API/data-model shift introduced.
+- **Parallel close-out owned by launcher**: when multiple issues fan out as subagents, the launcher (not individual subagents) flips PRD `→ Done` — no subagent knows whether it's last.
+- **Caveman + be-critical as rule files, not plugins**: always-on, zero runtime cost, no plugin surface to maintain.
 
 ## Domain glossary
 
@@ -36,10 +43,9 @@ Module map:
 - **Issue**: a tracer-bullet vertical slice at `.opencode/plans/issues/NNN_Issue_<slug>.md`. Lifecycle: `TODO → DOING → DONE → BLOCKED|CANCELLED` (managed by `to-issues` skill).
 - **Tracer bullet / vertical slice**: a single end-to-end slice of a feature, independently grabbable by one agent.
 - **Grilling**: the alignment interview (`/grilling`) that stress-tests a feature design before a PRD exists.
-- **Done-gate** (PRD 001): an issue may not move `→ DONE` until `.opencode/context/` has been refreshed for any architecture/API/data-model shift.
+- **Done-gate**: an issue may not move `→ DONE` until `.opencode/context/` has been refreshed for any architecture/API/data-model shift (rationale: see Design decisions).
 - **Caveman mode**: terse-model-output compression (drops articles/filler, keeps technical substance). Single full level. Tracked by the always-on rule file `instructions/caveman.md` (no runtime plugin).
 - **Be critical posture**: standing instruction (in `instructions/user-preferences.md`) for all agents to flag concrete technical flaws and design-taste concerns, flag-once-then-execute, with soft opt-out via phrases like "just do it". Complements caveman (compression) and grilling (plan-phase interviews).
-- **Parallel close-out**: when a launcher fans out multiple issues as concurrent subagents, the launcher owns close-out and flips the PRD `→ Done` once no non-archived issue siblings remain.
 
 ## Conventions pointer
 

@@ -45,6 +45,11 @@ Module map:
 - @.opencode/context/topics/data-model.md
 - @.opencode/context/topics/auth-module.md
 
+## Design decisions
+
+Non-obvious WHY behind the config shape (rationale, not mechanism). Only record decisions directly stated by the user or captured in a PRD; rephrase as needed for clarity. If unsure whether a rationale is a validated decision, do not add or edit it — ask the user first.
+- **Decision**: <why X over Y — one line>
+
 ## Domain glossary
 
 <8-12 hard terms the codebase assumes; one line each>
@@ -87,7 +92,7 @@ If the repo cannot answer a key question (e.g. "who is the primary user?", "what
 If `.opencode/context/CONTEXT.md` already existed, do NOT rewrite it. Instead:
 
 1. Read the existing `CONTEXT.md` and every `topics/*.md`.
-2. Run `git log --oneline -30` (or equivalent) and scan recent commits for shifts in: architecture, public API, data model, domain terms, module responsibilities, new features.
+2. Run `git log --oneline -30` (or equivalent) and scan recent commits for shifts in: design decisions (rationale not yet captured), architecture, public API, data model, domain terms, module responsibilities, new features.
 3. Read the current repo state (`package.json`, top-level dirs, `README.md`, any new modules since last refresh).
 4. Diff what the docs claim against what the repo now shows. Apply TARGETED patches with the Edit tool — preserve all manually curated prose, only update what drifted. If a topic file's concern has grown stale (module removed, feature shipped), update its content; only delete a topic file if the user confirms (suggest it; don't do it silently).
 5. If recent work clearly introduced a new deep concern (new big feature, new data-model area) that lacks a topic file, create one and add the `@` ref to CONTEXT.md's "Deep dives".

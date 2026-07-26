@@ -6,6 +6,7 @@ This project keeps a living project-context tree under `.opencode/context/` (sib
 
 In the SAME change (commit/PR) as your code edit, update the matching `.opencode/context/` doc when your change touches any of:
 
+- **Design decision** — a new non-obvious choice or rationale (why X over Y) -> edit `CONTEXT.md` "Design decisions" section (or a topic file if it warrants a deep dive). Only record decisions directly stated by the user or captured in a PRD; rephrase as needed for clarity. If unsure whether a rationale is a validated decision, do not add or edit it — ask the user first.
 - **Architecture** — top-level module add/remove/rename, data-flow shift, new service boundary -> edit `CONTEXT.md` Architecture section.
 - **Public API** — new/removed/renamed public interface (REST route, RPC method, exported library API, CLI flag) -> edit `CONTEXT.md` module map or a topic file.
 - **Data model** — schema change, new table/collection, migration altering shape -> edit/create `topics/data-model.md`.
@@ -15,7 +16,7 @@ In the SAME change (commit/PR) as your code edit, update the matching `.opencode
 
 ### When you need NOT update
 
-Cosmetic refactor, internal rename, test additions, dependency bumps, formatting, docs-only changes — no context edit needed.
+Cosmetic refactor, internal rename, test additions, dependency bumps, formatting, docs-only changes, implementation/code detail — the code is well-commented and the model reads it directly; do not mirror per-file code detail here. Context carries direction and WHY, not code duplication.
 
 ### Topic file rules
 
