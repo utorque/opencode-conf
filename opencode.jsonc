@@ -18,6 +18,28 @@
       "*": "allow"
     }
   },
+  "provider": {
+    // neuralwatt models not yet on the global models.dev repertoire.
+    "neuralwatt": {
+      "models": {
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "attachment": false,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 384000
+          }
+        }
+      }
+    }
+  },
   "agent": {
     "plan": {
       "disable": true

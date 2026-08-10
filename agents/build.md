@@ -1,5 +1,6 @@
 ---
-model: neuralwatt/glm-5.2-short
+model: neuralwatt/deepseek-v4-flash
+variant: high
 permission:
   task:
     "*": "deny"
