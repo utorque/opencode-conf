@@ -1,8 +1,8 @@
 ---
 description: Autonomous engineering agent. Runs without asking for permission on any tool. Use for long unattended task chains where you accept the risk of unchecked edits, bash, and deletions.
 mode: primary
-model: neuralwatt/deepseek-v4-flash
-variant: high
+model: neuralwatt/glm-5.3-flash
+variant: max
 permission:
   read: allow
   edit: allow

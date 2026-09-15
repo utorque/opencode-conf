@@ -19,9 +19,69 @@
     }
   },
   "provider": {
-    // neuralwatt models not yet on the global models.dev repertoire.
+    // neuralwatt custom model defs (override/complete models.dev entries).
     "neuralwatt": {
       "models": {
+        "deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "cost": {
+            "input": 0.15,
+            "output": 0.6
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          }
+        },
+        "glm-5.3": {
+          "name": "GLM 5.3",
+          "attachment": false,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "cost": {
+            "input": 1.45,
+            "output": 4.5
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 1048560
+          }
+        },
+        "glm-5.3-flash": {
+          "name": "GLM 5.3 Flash",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "cost": {
+            "input": 0.15,
+            "output": 0.5
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 1048560
+          }
+        },
+        "kimi-k3": {
+          "name": "Kimi K3",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "cost": {
+            "input": 3.0,
+            "output": 15.0
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 1048560
+          }
+        },
         "deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash",
           "attachment": false,

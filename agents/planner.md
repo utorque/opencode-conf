@@ -1,8 +1,8 @@
 ---
 description: Planning agent. Drives feature understanding, alignment, PRD creation, and task decomposition before any production code. Writes only planning artifacts under .opencode/plans/**. Use when sketching a feature before building.
 mode: primary
-model: neuralwatt/glm-5.2
-variant: high
+model: neuralwatt/glm-5.3-flash
+variant: max
 permission:
   read: allow
   glob: allow

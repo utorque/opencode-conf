@@ -1,6 +1,6 @@
 ---
-model: neuralwatt/deepseek-v4-flash
-variant: high
+model: neuralwatt/deepseek-v4.1-flash
+variant: max
 permission:
   task:
     "*": "deny"

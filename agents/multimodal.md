@@ -2,7 +2,8 @@
 description: Multimodal inspector that reads images and reports precise visual findings back to the main agent. Use when a task requires looking at screenshots, UI, diagrams, charts, or any image.
 mode: subagent
 hidden: true
-model: neuralwatt/qwen3.6-35b
+model: neuralwatt/deepseek-v4.1-flash
+variant: max
 permission:
   read: allow
   glob: allow
