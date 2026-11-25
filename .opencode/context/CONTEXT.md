@@ -15,7 +15,7 @@ Module map:
 - `AGENTS.md` — entry-point index; points at rule files + planning/context trees. Loaded first.
 - `instructions/` — always-on rule files (`caveman.md`, `user-preferences.md`, `context-hygiene.md`).
 - `agents/*.md` — per-agent role/phase/permission definitions (`planner`, `build`, `automode`, `multimodal`).
-- `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`).
+- `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`, `make-docs`).
 - `.opencode/plans/` — roadmap: `NNN_PRD_<slug>.md` + `issues/NNN_Issue_<slug>.md` (+ `archive/`).
 - `.opencode/context/` — this living project-context tree (you are here).
 - `commands/`, `install_plugins.sh` — bootstrap/utility.

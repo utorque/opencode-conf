@@ -1,0 +1,553 @@
+<!-- Filled in by build_docs.py — do not edit the generated output by hand. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Single-page project documentation.">
+<title>{{TITLE}}</title>
+<style>
+{{HIGHLIGHT_CSS}}
+:root {
+  --bg: #fff;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --line: #d1d9e0;
+  --accent: #0969da;
+  --accent-strong: #0550ae;
+  --side: #f6f8fa;
+  --callout: #ddf4ff;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--fg);
+  background: var(--bg);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+}
+.skip:focus {
+  left: 8px;
+  top: 8px;
+  z-index: 200;
+  padding: 8px 12px;
+  color: var(--fg);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+#layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+}
+nav#sidebar {
+  overscroll-behavior: contain;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  padding: 20px 16px;
+  font-size: 13px;
+  background: var(--side);
+  border-right: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+nav#sidebar summary { display: none; }
+nav#sidebar::-webkit-scrollbar { width: 8px; }
+nav#sidebar::-webkit-scrollbar-thumb { background: #c9d1d9; border-radius: 4px; }
+nav#sidebar .sidebar-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 8px;
+  background: var(--side);
+}
+nav#sidebar .brand {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+nav#sidebar .build {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+nav#sidebar ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+nav#sidebar ul ul {
+  margin: 2px 0 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
+}
+nav#sidebar a {
+  display: block;
+  padding: 2px 5px;
+  color: var(--fg);
+  text-decoration: none;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+nav#sidebar a:hover,
+nav#sidebar a.active {
+  color: var(--accent-strong);
+  background: var(--callout);
+}
+nav#sidebar .nav-doc > a {
+  margin-top: 8px;
+  font-weight: 600;
+}
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 44px 96px;
+}
+.page-header {
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.page-header h1 {
+  margin: 0 0 8px;
+  font-size: 2.1em;
+  line-height: 1.2;
+  border: 0;
+}
+.page-header .lede {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 1.05em;
+}
+.page-header .meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+nav#contents {
+  padding: 18px 22px;
+  margin: 0 0 36px;
+  background: var(--side);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+nav#contents h2 {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 1.15em;
+  border: 0;
+}
+.nowrap { white-space: nowrap; }
+.contents-grid { columns: 2; column-gap: 34px; }
+.contents-grid ol {
+  margin: 0;
+  padding-left: 22px;
+}
+.contents-grid ol ul {
+  margin: 2px 0 10px;
+  padding-left: 16px;
+}
+.contents-grid li {
+  margin: 2px 0;
+  break-inside: avoid;
+}
+.contents-grid a { text-decoration: none; }
+.contents-grid a:hover { text-decoration: underline; }
+.contents-grid .toc-doc > a { font-weight: 600; }
+.contents-grid .toc-sub a { color: var(--muted); font-size: 14px; }
+section.doc { padding-top: 8px; }
+section.doc + section.doc {
+  margin-top: 44px;
+  border-top: 1px solid var(--line);
+}
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  scroll-margin-top: 14px;
+}
+h1 {
+  padding-bottom: .3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--line);
+}
+h2 {
+  padding-bottom: .3em;
+  margin-top: 1.6em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--line);
+}
+h3 { margin-top: 1.4em; font-size: 1.2em; }
+a { color: var(--accent); }
+.anchor {
+  margin-left: 4px;
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: .25;
+}
+.anchor:hover { color: var(--accent); opacity: 1; }
+blockquote {
+  margin: 1em 0;
+  padding: .6em 1em;
+  background: var(--side);
+  border-left: 4px solid var(--accent);
+}
+blockquote p { margin: .2em 0; }
+code {
+  padding: .15em .35em;
+  font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: rgba(175, 184, 193, .2);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+pre {
+  padding: 14px 16px;
+  overflow: auto;
+  background: var(--side);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  scrollbar-width: thin;
+}
+pre code {
+  padding: 0;
+  font-size: .88em;
+  background: none;
+  overflow-wrap: normal;
+}
+pre.mermaid {
+  position: relative;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+pre.mermaid::after {
+  content: '⤢ click to enlarge';
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  padding: 1px 4px;
+  color: #444;
+  font-size: 11px;
+  background: #fff;
+  border-radius: 4px;
+  opacity: .8;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+pre.mermaid:hover::after { opacity: 1; }
+pre.mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  cursor: zoom-in;
+}
+pre code a[aria-hidden="true"] { display: none; }
+.table-wrap {
+  margin: 1em 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+table {
+  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px 8px;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid var(--line);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+th { background: var(--side); }
+td code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+hr {
+  margin: 2em 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+footer {
+  padding-top: 16px;
+  margin-top: 64px;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+footer p { margin: .4em 0; }
+.back-top {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: none;
+  width: 38px;
+  height: 38px;
+  color: var(--fg);
+  font-size: 20px;
+  line-height: 36px;
+  text-align: center;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+  z-index: 50;
+}
+.back-top.show { display: block; }
+#zoom {
+  display: none;
+  cursor: grab;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: 56px 32px 32px;
+  overflow: auto;
+  background: rgba(0, 0, 0, .78);
+  scrollbar-width: thin;
+}
+#zoom.open { display: block; }
+#zoom:active { cursor: grabbing; }
+#zoom::-webkit-scrollbar { width: 10px; height: 10px; }
+#zoom-stage {
+  display: flex;
+  cursor: grab;
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+}
+#zoom svg {
+  display: block;
+  max-width: none !important;
+  height: auto;
+  margin: auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 6px;
+}
+#zoom-close {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 101;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #1f2328;
+  font-size: 24px;
+  line-height: 1;
+  background: #fff;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+  cursor: pointer;
+}
+#zoom-stage { user-select: none; }
+#zoom-stage svg { cursor: default; }
+#zoom-hint {
+  position: fixed;
+  top: 20px;
+  left: 24px;
+  z-index: 101;
+  margin: 0;
+  color: #fff;
+  font-size: 13px;
+  opacity: .85;
+}
+@media (max-width: 900px) {
+  #layout { display: block; }
+  nav#sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    max-height: 45vh;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+  }
+  nav#sidebar summary {
+    display: block;
+    padding: 6px 4px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  nav#sidebar summary::-webkit-details-marker { display: none; }
+  nav#sidebar summary::before { content: '▸ '; }
+  nav#sidebar details[open] > summary::before { content: '▾ '; }
+  main { padding: 24px 18px 64px; }
+  .contents-grid { columns: 1; }
+  .page-header h1 { font-size: 1.7em; }
+}
+@media print {
+  #layout { display: block; }
+  nav#sidebar,
+  .skip,
+  .back-top,
+  #zoom,
+  pre.mermaid::after { display: none !important; }
+  main { max-width: none; padding: 0; }
+  nav#contents { break-after: page; }
+  section.doc { page-break-before: always; }
+  section.doc:first-of-type { page-break-before: auto; }
+  blockquote, pre, table, tr { page-break-inside: avoid; }
+  table { font-size: 10pt; }
+  a { color: inherit; text-decoration: underline; }
+  .anchor { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#top">Skip to content</a>
+<div id="layout">
+<nav id="sidebar" aria-label="Documentation">
+  <div class="sidebar-head">
+    <a class="brand" href="#top">{{PROJECT_NAME}}</a>
+    <p class="build">Single-page documentation<br><span class="nowrap">{{BUILD_DATE}}</span></p>
+  </div>
+  <details id="sidebar-details" open>
+    <summary>Documentation menu</summary>
+    {{SIDEBAR}}
+  </details>
+</nav>
+<main id="top">
+  <header class="page-header">
+    <h1 id="page-title">{{TITLE}} <a class="anchor" href="#page-title" aria-label="Link to this page">#</a></h1>
+    <p class="lede">{{LEDE}}</p>
+    <p class="meta">Generated from <code>docs/*.md</code> on <span class="nowrap">{{BUILD_DATE}}</span>. Use the contents below or the sticky sidebar to jump around; every heading has a <code>#</code> link.</p>
+  </header>
+  {{CONTENTS}}
+  {{BODY}}
+  <footer>
+    <p>Generated by <code>build_docs.py</code> on <span class="nowrap">{{BUILD_DATE}}</span>. Edit the Markdown sources, then rebuild and commit the generated page.</p>
+    <p>{{AGENTS_NOTE}}</p>
+  </footer>
+</main>
+</div>
+<div id="zoom" role="dialog" aria-modal="true" aria-label="Enlarged diagram">
+  <button id="zoom-close" type="button" aria-label="Close enlarged diagram">×</button>
+  <p id="zoom-hint">Drag, scroll or use arrow keys to pan · Esc to close</p>
+  <div id="zoom-stage"></div>
+</div>
+<a class="back-top" href="#top" aria-label="Back to top">↑</a>
+<script>{{MERMAID_JS}}</script>
+<script>
+mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'default' });
+document.querySelectorAll('pre.mermaid').forEach((pre) => {
+  const code = pre.querySelector('code');
+  if (code) pre.textContent = code.textContent;
+});
+mermaid.run({ querySelector: 'pre.mermaid' }).catch((error) => console.error(error));
+
+const sidebar = document.getElementById('sidebar');
+const links = new Map(
+  [...document.querySelectorAll('#sidebar a')].map((a) => [a.getAttribute('href').slice(1), a])
+);
+const targets = [...document.querySelectorAll('section.doc, section.doc h2[id]')];
+let scrollTick = 0;
+function updateActive() {
+  scrollTick = 0;
+  const y = window.scrollY + 120;
+  let current = targets[0];
+  for (const target of targets) {
+    if (target.getBoundingClientRect().top + window.scrollY > y) break;
+    current = target;
+  }
+  links.forEach((a) => {
+    a.classList.remove('active');
+    a.removeAttribute('aria-current');
+  });
+  const active = current && links.get(current.id);
+  if (!active) return;
+  active.classList.add('active');
+  active.setAttribute('aria-current', 'true');
+  const rect = active.getBoundingClientRect();
+  const navRect = sidebar.getBoundingClientRect();
+  if (rect.top < navRect.top + 8 || rect.bottom > navRect.bottom - 8) {
+    sidebar.scrollTop += rect.top - navRect.top - 40;
+  }
+}
+addEventListener('scroll', () => {
+  if (!scrollTick) scrollTick = requestAnimationFrame(updateActive);
+}, { passive: true });
+const sidebarDetails = document.getElementById('sidebar-details');
+addEventListener('resize', () => {
+  if (innerWidth > 900) sidebarDetails.open = true;
+  updateActive();
+});
+updateActive();
+
+const zoom = document.getElementById('zoom');
+const zoomStage = document.getElementById('zoom-stage');
+const zoomClose = document.getElementById('zoom-close');
+function closeZoom() {
+  zoom.classList.remove('open');
+  zoomStage.replaceChildren();
+}
+document.addEventListener('click', (event) => {
+  const svg = event.target.closest && event.target.closest('pre.mermaid svg');
+  if (!svg) return;
+  const clone = svg.cloneNode(true);
+  const box = svg.viewBox && svg.viewBox.baseVal;
+  clone.style.maxWidth = 'none';
+  clone.style.width = (box && box.width ? box.width : svg.getBoundingClientRect().width) + 'px';
+  clone.style.height = 'auto';
+  clone.style.cursor = 'default';
+  zoomStage.replaceChildren(clone);
+  zoom.scrollTop = 0;
+  zoom.scrollLeft = 0;
+  zoom.classList.add('open');
+  zoomClose.focus();
+});
+zoom.addEventListener('click', (event) => {
+  if (dragged) { dragged = false; return; }
+  if (event.target === zoom) closeZoom();
+});
+zoomClose.addEventListener('click', closeZoom);
+let pan = null;
+let dragged = false;
+zoom.addEventListener('pointerdown', (event) => {
+  if (!(event.target === zoom || event.target.closest('#zoom-stage'))) return;
+  pan = { x: event.clientX, y: event.clientY, left: zoom.scrollLeft, top: zoom.scrollTop };
+  dragged = false;
+  zoom.setPointerCapture(event.pointerId);
+});
+zoom.addEventListener('pointermove', (event) => {
+  if (!pan) return;
+  if (Math.abs(event.clientX - pan.x) + Math.abs(event.clientY - pan.y) > 3) dragged = true;
+  zoom.scrollLeft = pan.left - (event.clientX - pan.x);
+  zoom.scrollTop = pan.top - (event.clientY - pan.y);
+});
+zoom.addEventListener('pointerup', () => { pan = null; });
+zoom.addEventListener('pointercancel', () => { pan = null; });
+addEventListener('keydown', (event) => {
+  if (!zoom.classList.contains('open')) return;
+  if (event.key === 'Escape') { closeZoom(); return; }
+  const step = 80;
+  if (event.key === 'ArrowRight') { zoom.scrollLeft += step; event.preventDefault(); }
+  if (event.key === 'ArrowLeft') { zoom.scrollLeft -= step; event.preventDefault(); }
+  if (event.key === 'ArrowDown') { zoom.scrollTop += step; event.preventDefault(); }
+  if (event.key === 'ArrowUp') { zoom.scrollTop -= step; event.preventDefault(); }
+});
+
+const backTop = document.querySelector('.back-top');
+addEventListener('scroll', () => {
+  backTop.classList.toggle('show', window.scrollY > 600);
+}, { passive: true });
+</script>
+</body>
+</html>

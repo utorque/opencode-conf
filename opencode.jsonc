@@ -82,6 +82,21 @@
             "output": 1048560
           }
         },
+        "kimi-k3.1-pro": {
+          "name": "Kimi K3.1 Pro",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": false,
+          "tool_call": true,
+          "cost": {
+            "input": 2.0,
+            "output": 10.0
+          },
+          "limit": {
+            "context": 1048560,
+            "output": 1048560
+          }
+        },
         "deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash",
           "attachment": false,

@@ -13,7 +13,7 @@ Per-agent model/mode/permissions live in each `agents/*.md` frontmatter — read
 
 ## Skills
 
-Workflow single source of truth under `skills/*/SKILL.md`. Families: planning (`grilling`, `to-prd`, `to-issues`), `tdd`, `pdf`.
+Workflow single source of truth under `skills/*/SKILL.md`. Families: planning (`grilling`, `to-prd`, `to-issues`), `tdd`, `pdf`, docs (`make-docs` — multi-phase generate/verify docs suite + optional single-page HTML dist, invoked via `/make-docs`).
 
 ## Boundary
 
