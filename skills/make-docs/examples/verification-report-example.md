@@ -10,7 +10,16 @@ This shows what `docs/_verification_report.md` looks like after the verify phase
 **Date**: 2026-03-31
 **Iteration**: 2
 **Verdict**: PASS ✅
-**Documents**: 15 pass / 0 fail out of 15
+**Documents**: 15 pass / 0 fail / 0 N/A out of 15
+
+## Deterministic Checks
+
+- File paths: pass
+- Cross-references / dist `--check`: pass
+- Endpoint/command/export counts: pass
+- Mermaid syntax: pass
+- Secret scan: pass
+- Generated markers: pass
 
 ## Grade Summary
 

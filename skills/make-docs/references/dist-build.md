@@ -1,45 +1,60 @@
 # Dist Build — single-page HTML documentation handoff (Phase 5, optional)
 
 Run this phase when the user asked for a distributable documentation page (e.g. "build the docs
-dist", "single-page HTML docs"). It packages the Markdown docs in `docs/` into **one
+dist", "single-page HTML docs"). It packages the generated Markdown docs in `docs/` into **one
 self-contained, committed HTML page** at `docs/dist/index.html`.
 
-If the implementation already exists in the target repo, verify it against this spec and rebuild;
-do not create a second script or a second output path.
+The canonical builder is the skill script at [`../scripts/build_docs.py`](../scripts/build_docs.py)
+with the shell at [`../scripts/docs_template.html`](../scripts/docs_template.html). The
+`/build-docs` command and Phase 5 invoke the skill copy so there is only one implementation. If a
+project intentionally vendors the script under `docs/script/`, point `MAKE_DOCS_SCRIPT` at that
+file instead of maintaining an unpinned second copy.
 
 ## Goal
 
-Turn the project's public Markdown documentation into one page that works when opened directly
-from disk (`file://`), with no server and no external assets. It must be easy to regenerate
-whenever the Markdown changes.
+Turn the project's generated Markdown docs into one page that works when opened directly from disk
+(`file://`), with no server and no external assets. It must be easy to regenerate whenever the
+Markdown changes.
 
 ## Locked decisions
 
-- All public docs (`docs/*.md`) are concatenated into one long page, in a stable order.
+- Public docs are the marked generated docs (`<!-- make-docs:generated -->`) in `docs/`, concatenated
+  into one long page in a stable order. `--all` includes unmarked/legacy docs; `--only`/`--skip`
+  narrow the set.
 - The project-root `README.md` is **not** embedded; links to it point to the local file, relative
   to the generated page.
-- Internal working reports `docs/_*.md` are excluded.
+- Internal working reports `docs/_*.md` and `docs/_backup/` are excluded.
 - `AGENTS.md` is **not** embedded (it is agent-facing). Links to it point to the local file,
   relative to the generated page — never a forge (GitLab/GitHub) URL.
+- Nested Markdown files and non-Markdown assets that are not embedded stay local file links; the
+  build fails only when a relative target does not exist.
 - Mermaid JavaScript is inlined (pinned version, SHA-256-verified, cached) so diagrams render
-  offline.
+  offline. `--mermaid PATH` supplies the pinned file for an air-gapped first build.
 - There is a navigable table of contents at the top of the page and a sticky sidebar. Every
   heading gets a visible `#` anchor link.
 - The generated HTML is committed to git.
-- The Markdown files remain the source of truth; no doc format changes are required. Never
-  hand-edit generated HTML.
+- The Markdown files remain the source of truth; no doc format changes are required. Never hand-edit
+  generated HTML.
 - Use `uv` for Python; do not add a docs dependency to the project's lockfile unless explicitly
   requested.
+- High-confidence secret scan runs before the page is written. `--no-secret-scan` is an explicit
+  escape hatch; inline `make-docs:allow-secret` exempts a synthetic example line.
 
 ## Script
 
-The build script lives in this skill at
-[`../scripts/build_docs.py`](../scripts/build_docs.py), with the HTML/CSS/JS shell
-([`../scripts/docs_template.html`](../scripts/docs_template.html)) next to it. It is
-project-agnostic — run it **from the project you are documenting**:
+Run it **from the project you are documenting**. Prefer the `/build-docs` command, which resolves
+the canonical script for you:
 
 ```bash
-uv run --with 'pypandoc-binary==1.17' python /path/to/skills/make-docs/scripts/build_docs.py
+SKILL_DIR="${OPENCODE_CONFIG:-$HOME/.config/opencode}/skills/make-docs"
+uv run --with 'pypandoc-binary==1.17' python "$SKILL_DIR/scripts/build_docs.py" --project "$PWD"
+```
+
+If `uv` is unavailable:
+
+```bash
+python3 -m pip install --user 'pypandoc-binary==1.17'
+python3 "$SKILL_DIR/scripts/build_docs.py" --project "$PWD"
 ```
 
 Interface:
@@ -49,14 +64,22 @@ Interface:
 - `--output PATH` — output HTML (default: `<docs-dir>/dist/index.html`).
 - `--title TEXT` / `--lede TEXT` — branding overrides; defaults derive from the project README's
   first `#` heading (else the folder name).
+- `--all` — include docs without the generated marker (legacy/hand-written docs).
+- `--only a,b` / `--skip c,d` — comma-separated page slugs.
+- `--check` — validate pages, markers, secret scan, links, and counts without writing HTML or
+  downloading Mermaid.
+- `--mermaid PATH` — local pinned Mermaid JS file instead of the cache/CDN.
+- `--no-secret-scan` — skip the high-confidence secret scan.
 
 Dependencies:
 
-- `pypandoc-binary==1.17` bundles Pandoc 3.9. A system Pandoc (3.1+) also works; the script
-  prefers pypandoc and falls back to `pandoc`.
-- First run downloads Mermaid to `~/.cache/make-docs/`; later builds are offline. Mermaid is
-  pinned to `11.12.2` with SHA-256
-  `d0830a6c05546e9edb8fe20a8f545f3e0dc7c4c3134d584bad9c13a99d7a71e0`.
+- Python 3.10+.
+- `pypandoc-binary==1.17` bundles Pandoc 3.9. A system Pandoc (3.1+) also works; the script prefers
+  pypandoc and falls back to `pandoc`.
+- First run downloads Mermaid to `~/.cache/make-docs/`; later builds are offline. Mermaid is pinned
+  to `11.12.2` with SHA-256
+  `d0830a6c05546e9edb8fe20a8f545f3e0dc7c4c3134d584bad9c13a99d7a71e0`. Use `--mermaid` to supply
+  that exact file when there is no network.
 - Build time is a few seconds. Output is a few MiB because Mermaid is inline.
 
 ## Page discovery and order
@@ -64,12 +87,15 @@ Dependencies:
 No per-project page list is maintained. The script auto-discovers `docs/*.md`:
 
 1. Files beginning with `_` are internal working files — excluded.
-2. `README.md` or `index.md` (docs index) comes first.
-3. Remaining pages follow alphabetically by filename.
-4. Slug = filename stem; nav label = the page's first `#` heading, else a prettified stem.
+2. Only docs containing `<!-- make-docs:generated -->` are included by default. `--all` relaxes
+   this for legacy docs (pre-3.2 output has no marker).
+3. `README.md` or `index.md` (docs index) comes first.
+4. Remaining pages follow alphabetically by filename.
+5. Slug = filename stem; nav label = the page's first `#` heading, else a prettified stem.
+6. Duplicate slugs (e.g. `a_b.md` and `a-b.md`) fail the build with a clear error.
 
-Because discovery is automatic, every non-`_` Markdown file in `docs/` is part of the published
-page — there is no list to fall out of sync.
+Because discovery is automatic, every selected Markdown file in `docs/` is part of the published
+page — there is no list to fall out of sync. N/A docs are never generated, so they never appear.
 
 ## Build pipeline (what the script does)
 
@@ -77,18 +103,22 @@ For each page:
 
 1. Render with Pandoc GFM:
    `pandoc -f gfm -t html5 --wrap=none --highlight-style=tango`.
-2. Prefix every generated `id` with `<slug>-` so headings like `Overview` repeated in many docs
-   do not collide.
+2. Prefix every generated `id` with `<slug>-` so headings like `Overview` repeated in many docs do
+   not collide.
 3. Rewrite in-page links (in the rendered HTML, **not** the Markdown) so code blocks containing
    links are never corrupted:
-   - `href="#foo"` -> `href="#<slug>-foo"`.
+   - `href="#foo"` -> `href="#<slug>-foo"`, except page-global anchors (`top`, `contents-heading`,
+     `page-title`).
    - `href="foo.md"` -> `href="#foo"`.
    - `href="foo.md#bar"` -> `href="#foo-bar"`.
-   - `href="../README.md"` -> the local project-root `README.md`, relative to the generated page,
-     plus `#bar` if present. The root README is not a page section.
-   - `href="AGENTS.md"` and `href="../AGENTS.md"` -> relative local path from the output file to
-     the project-root `AGENTS.md`.
-   - External `http(s)`/`mailto` links are left alone.
+   - `href="../README.md"` and other existing non-embedded files -> the local repo file path,
+     relative to the output page, plus `#bar` if present.
+   - Any link resolving to the project-root `AGENTS.md` (usually `../AGENTS.md` from `docs/`) ->
+     relative local path from the output file to that file.
+   - Percent-encoded paths and anchors are decoded first.
+   - Absolute `/docs/...` paths resolve from the project root.
+   - Nested `.md` files not in the published page become local file links.
+   - External `http(s)`/`mailto:` and other URI schemes are left alone.
    - Any other relative link: if it resolves to an existing repo file, rewrite it to a path
      relative to the output page; if it resolves to the output HTML itself, use `#top`; otherwise
      **fail the build**.
@@ -108,7 +138,8 @@ sticky sidebar), `{{BODY}}` (all sections in order), `{{MERMAID_JS}}` (pinned in
 omitted when the file does not exist), `{{BUILD_DATE}}` (ISO date).
 
 The template provides the page header, footer, responsive CSS, print CSS, sidebar scrollspy,
-back-to-top link, Mermaid initialization, and the click-to-enlarge diagram overlay.
+back-to-top link, Mermaid initialization with `securityLevel: 'antiscript'`, and the
+click-to-enlarge diagram overlay. It embeds no external fonts or scripts.
 
 ## Front-end behavior
 
@@ -127,18 +158,20 @@ back-to-top link, Mermaid initialization, and the click-to-enlarge diagram overl
 
 The build must fail, not silently write, when:
 
-- the docs directory is missing or contains no public Markdown;
+- the docs directory is missing or contains no selected Markdown;
+- the secret scan finds a high-confidence secret;
 - a relative link cannot be resolved;
 - any generated `href="#..."` has no matching `id`;
 - the number of doc sections differs from the discovered page count;
 - the rendered Mermaid block count differs from the source `mermaid` fence count;
-- a template marker is missing.
+- a template marker is missing;
+- two pages produce the same slug.
 
 After a successful build, smoke-check:
 
 ```bash
 test -f docs/dist/index.html
-grep -c '<section class="doc"' docs/dist/index.html     # == number of public docs
+grep -c '<section class="doc"' docs/dist/index.html     # == number of selected docs
 grep -c '<pre class="mermaid">' docs/dist/index.html    # == number of ```mermaid fences
 ```
 
@@ -156,18 +189,29 @@ A quick headless check with Chrome/Puppeteer is fine; do not add it as a repo de
 text-only harness, delegate the visual check to an image-inspection subagent on a screenshot, or
 ask the user to eyeball the page.
 
+## Script tests
+
+The builder has unit tests for heading labels, page discovery, markers, link rewriting, and secret
+scanning. Run them after changing the script:
+
+```bash
+python3 -m unittest discover -s "${OPENCODE_CONFIG:-$HOME/.config/opencode}/skills/make-docs/tests" -v
+```
+
 ## README requirement
 
-The target project's README should document the build so future agents can rebuild without this
-skill. A `## Documentation build` section should state:
+Phase 5 must add or update a `## Documentation build` section in the target project's README so
+future agents can rebuild without this skill:
 
 - output path `docs/dist/index.html`;
-- the exact build command;
+- the exact build command (prefer `/build-docs` or the skill-script command above);
 - the generated HTML is committed and must be rebuilt with any docs change;
 - never hand-edit the generated HTML;
-- `docs/_*.md` are excluded;
+- `docs/_*.md` and `docs/_backup/` are excluded;
+- only docs with `<!-- make-docs:generated -->` are embedded by default; `--all` includes legacy
+  docs;
 - `AGENTS.md` links stay local; the root `README.md` is not embedded;
-- Mermaid is pinned/cached, first build needs network;
+- Mermaid is pinned/cached, first build needs network unless `--mermaid` is supplied;
 - docs content must stay synthetic/PII-free (no real secrets, no real user data).
 
 ## Change loop
@@ -178,13 +222,16 @@ When editing documentation in the target project:
 # 1. Edit Markdown
 $EDITOR docs/*.md README.md
 
-# 2. Rebuild the committed page
-uv run --with 'pypandoc-binary==1.17' python /path/to/skills/make-docs/scripts/build_docs.py
+# 2. Validate links/counts without writing
+/build-docs --check
 
-# 3. Inspect / smoke-test
+# 3. Rebuild the committed page
+/build-docs
+
+# 4. Inspect / smoke-test
 #    open docs/dist/index.html
 
-# 4. Commit Markdown + generated HTML together
+# 5. Commit Markdown + generated HTML together
 git add docs/*.md README.md docs/dist/index.html
 git commit -m "docs: update single-page HTML"
 ```
@@ -201,6 +248,8 @@ git commit -m "docs: update single-page HTML"
 - Do not commit `.env`, certs, credentials, or real user data via the docs.
 - Do not change Mermaid/Pandoc versions without updating the checksum/version in the script and
   this file.
+- Do not maintain a second unpinned copy of `build_docs.py`. Use the canonical skill script, or
+  set `MAKE_DOCS_SCRIPT` for an intentionally vendored copy under `docs/script/`.
 - Pandoc 3.9 prints a deprecation warning for `--highlight-style`; the build filters only that
   known warning. Do not silence other warnings.
 - The sidebar/contents intentionally skip per-doc TOCs, `Related Docs`, and `Last Updated`
@@ -211,7 +260,7 @@ git commit -m "docs: update single-page HTML"
 Done when:
 
 - `docs/dist/index.html` exists, is committed, and opens offline;
-- the page starts with a header, the two-column `Contents`, then all public docs in discovery
+- the page starts with a header, the two-column `Contents`, then all selected docs in discovery
   order;
 - all Mermaid diagrams render without external requests;
 - all in-page links resolve;

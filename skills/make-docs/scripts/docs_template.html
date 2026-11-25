@@ -446,7 +446,7 @@ footer p { margin: .4em 0; }
 <a class="back-top" href="#top" aria-label="Back to top">↑</a>
 <script>{{MERMAID_JS}}</script>
 <script>
-mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'default' });
+mermaid.initialize({ startOnLoad: false, securityLevel: 'antiscript', theme: 'default' });
 document.querySelectorAll('pre.mermaid').forEach((pre) => {
   const code = pre.querySelector('code');
   if (code) pre.textContent = code.textContent;

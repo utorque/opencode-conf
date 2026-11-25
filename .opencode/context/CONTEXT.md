@@ -18,7 +18,7 @@ Module map:
 - `skills/*/SKILL.md` — workflow single-source-of-truth bodies (`grilling`, `tdd`, `pdf`, `to-prd`, `to-issues`, `make-docs`).
 - `.opencode/plans/` — roadmap: `NNN_PRD_<slug>.md` + `issues/NNN_Issue_<slug>.md` (+ `archive/`).
 - `.opencode/context/` — this living project-context tree (you are here).
-- `commands/`, `install_plugins.sh` — bootstrap/utility.
+- `commands/` — slash commands (`make-docs`, `build-docs`, `refresh-context-md`, `project-status`); `install_plugins.sh` — bootstrap/utility.
 
 ### Deep dives (loaded on demand — read with the Read tool when the task touches them)
 - @.opencode/context/topics/agents-and-skills.md

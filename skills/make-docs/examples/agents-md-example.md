@@ -1,7 +1,9 @@
 # Example: AGENTS.md Output
 
-This shows the `AGENTS.md` file that generate-docs creates at the project root for
-cross-tool compatibility with Cursor, Copilot, Windsurf, Codex, and others.
+This shows the `AGENTS.md` section that make-docs appends to a project root. Everything above the
+`BEGIN` marker is existing human-written content — make-docs never touches it. The optional
+`Context tree` row appears only when the project already has `.opencode/context/`. In a real run,
+delete every row for a doc that was N/A or `--skip`; never link a missing file.
 
 ---
 
@@ -9,6 +11,8 @@ cross-tool compatibility with Cursor, Copilot, Windsurf, Codex, and others.
 # MyApp
 
 SaaS platform for document automation. TypeScript monorepo.
+
+<!-- BEGIN AUTO-GENERATED DOCS SECTION — regenerate with make-docs -->
 
 ## Project Structure
 src/api/        → API route handlers and middleware
@@ -31,26 +35,29 @@ npm run lint          # ESLint + Prettier check
 Express REST API serving a React SPA. PostgreSQL via Prisma ORM, Redis for
 caching and Bull job queues. JWT auth with refresh tokens. Deployed via Docker
 on AWS ECS with GitHub Actions CI/CD.
-Full details: docs/architecture.md
+Full details: [docs/architecture.md](docs/architecture.md)
 
 ## Key Documentation
 
+Read the relevant doc before making changes in that area.
+
 | Area | File | Read when... |
 |------|------|--------------|
-| Architecture | docs/architecture.md | Modifying system structure or adding services |
-| API Reference | docs/api-reference.md | Adding or modifying endpoints |
-| Database | docs/database-schema.md | Working with models, migrations, schemas |
-| Services | docs/services.md | Changing inter-service communication |
-| Frontend-Backend | docs/frontend-backend.md | Changing data fetching or auth flow |
-| Workflows | docs/workflows-and-triggers.md | Adding jobs, cron, events, webhooks |
-| Security | docs/security.md | Modifying auth, permissions, validation |
-| Glossary | docs/glossary.md | Encountering domain terms, naming entities |
-| Errors | docs/error-catalog.md | Adding error handling or custom errors |
-| Conventions | docs/coding-conventions.md | Unsure about patterns or naming |
-| Testing | docs/testing-strategy.md | Writing or modifying tests |
-| Environment | docs/environment-setup.md | Setting up local dev or troubleshooting |
-| DevOps | docs/devops.md | Modifying CI/CD or deployment |
-| Tech Stack | docs/tech-stack.md | Evaluating or checking dependencies |
+| Architecture | [docs/architecture.md](docs/architecture.md) | Modifying system structure or adding services |
+| API Reference | [docs/api-reference.md](docs/api-reference.md) | Adding or modifying endpoints |
+| Database | [docs/database-schema.md](docs/database-schema.md) | Working with models, migrations, schemas |
+| Services | [docs/services.md](docs/services.md) | Changing inter-service communication |
+| Frontend-Backend | [docs/frontend-backend.md](docs/frontend-backend.md) | Changing data fetching or auth flow |
+| Workflows | [docs/workflows-and-triggers.md](docs/workflows-and-triggers.md) | Adding jobs, cron, events, webhooks |
+| Security | [docs/security.md](docs/security.md) | Modifying auth, permissions, validation |
+| Glossary | [docs/glossary.md](docs/glossary.md) | Encountering domain terms, naming entities |
+| Errors | [docs/error-catalog.md](docs/error-catalog.md) | Adding error handling or custom errors |
+| Conventions | [docs/coding-conventions.md](docs/coding-conventions.md) | Unsure about patterns or naming |
+| Testing | [docs/testing-strategy.md](docs/testing-strategy.md) | Writing or modifying tests |
+| Environment | [docs/environment-setup.md](docs/environment-setup.md) | Setting up local dev or troubleshooting |
+| DevOps | [docs/devops.md](docs/devops.md) | Modifying CI/CD or deployment |
+| Tech Stack | [docs/tech-stack.md](docs/tech-stack.md) | Evaluating or checking dependencies |
+| Context tree | [.opencode/context/CONTEXT.md](.opencode/context/CONTEXT.md) | Project intent, design decisions, glossary |
 
 ## Conventions
 - All API responses use `{ success: boolean, data?: T, error?: { code, message } }`
@@ -71,6 +78,16 @@ Full details: docs/architecture.md
 
 ## Constraints
 - Verify endpoints and models against docs before creating new ones
-- Follow patterns documented in docs/coding-conventions.md
-- Use terminology from docs/glossary.md
+- Follow patterns documented in [docs/coding-conventions.md](docs/coding-conventions.md)
+- Use terminology from [docs/glossary.md](docs/glossary.md)
+- Rebuild `docs/dist/index.html` with `/build-docs` after docs changes; never hand-edit it
+
+<!-- END AUTO-GENERATED DOCS SECTION -->
 ```
+
+## Refreshing `.opencode/context/`
+
+When `.opencode/context/` exists, Phase 4b also reconciles it with the generated docs: `CONTEXT.md`
+stays lean and points at `topics/*.md` via `@` refs; architecture/module-map/glossary drifts are
+fixed in place; a data-model shift creates or updates `topics/data-model.md`. The tree is never
+created if absent.

@@ -9,6 +9,9 @@ Defaults:
     --docs-dir  ./docs
     --output    ./docs/dist/index.html
 
+Only docs carrying the ``<!-- make-docs:generated -->`` marker are published by
+default. Pass ``--all`` to include hand-written or legacy docs too.
+
 The Markdown files are the source of truth. This script renders each public
 page with Pandoc, makes heading IDs unique per document, rewrites links to
 in-page anchors, and assembles one self-contained HTML file (meant to be
@@ -24,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import functools
 import hashlib
 import html
 import os
@@ -32,10 +36,17 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
+
+if sys.version_info < (3, 10):
+    sys.exit("build_docs.py requires Python 3.10 or newer")
 
 SCRIPT = pathlib.Path(__file__).resolve()
 TEMPLATE = SCRIPT.parent / "docs_template.html"
+
+GENERATED_MARKER = "<!-- make-docs:generated -->"
+ALLOW_SECRET = "make-docs:allow-secret"
 
 MERMAID_VERSION = "11.12.2"
 MERMAID_URL = (
@@ -49,19 +60,75 @@ MERMAID_SHA256 = (
 # Headings that are redundant with the generated navigation.
 SKIP_NAV = {"table-of-contents", "related-docs", "last-updated"}
 
+# Anchors that stay page-global instead of being scoped to one document.
+GLOBAL_ANCHORS = {"top", "contents-heading", "page-title"}
+
+# High-confidence secret shapes. Inline ``make-docs:allow-secret`` exempts a
+# line, e.g. for documentation examples.
+SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("private key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")),
+    ("AWS access key", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
+    (
+        "GitHub token",
+        re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})\b"),
+    ),
+    ("Slack token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")),
+    ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
+    ("Stripe live key", re.compile(r"\bsk_live_[0-9A-Za-z]{20,}\b")),
+    (
+        "OpenAI-style key",
+        re.compile(r"\bsk-(?:proj-|live-)?[A-Za-z0-9_-]{32,}\b"),
+    ),
+)
+
+
+class LinkError(Exception):
+    """Raised when a relative link cannot be resolved."""
+
+
+def plain_heading(text: str) -> str:
+    """Strip inline Markdown so toc/sidebar labels are readable text."""
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"`+([^`]*)`+", r"\1", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
+    text = re.sub(r"~~([^~]+)~~", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_]+)_(?!\w)", r"\1", text)
+    text = re.sub(r"\\([\\`*_{}\[\]()#+\-.!])", r"\1", text)
+    return html.unescape(text).strip()
+
 
 def first_heading(md_path: pathlib.Path) -> str | None:
-    """Return the first ``# `` heading text, skipping YAML frontmatter."""
-    text = md_path.read_text(encoding="utf-8")
-    if text.startswith("---"):
-        end = text.find("\n---", 3)
-        if end != -1:
-            text = text[end + 4 :]
-    for line in text.splitlines():
-        match = re.match(r"^#\s+(.+?)\s*$", line)
+    """Return the first ``# `` heading text, skipping frontmatter and fences."""
+    lines = md_path.read_text(encoding="utf-8").splitlines()
+    if lines and lines[0].strip() == "---":
+        for index in range(1, len(lines)):
+            if lines[index].strip() == "---":
+                lines = lines[index + 1 :]
+                break
+
+    fence: str | None = None
+    for line in lines:
+        stripped = line.lstrip()
+        if fence is not None:
+            if stripped.startswith(fence):
+                fence = None
+            continue
+        opener = re.match(r"^(```+|~~~+)", stripped)
+        if opener:
+            fence = opener.group(1)[:3]
+            continue
+        match = re.match(r"^\s{0,3}#\s+(.+?)(?:\s+#+)?\s*$", line)
         if match:
-            return match.group(1)
+            return plain_heading(match.group(1))
     return None
+
+
+def has_generated_marker(md_path: pathlib.Path) -> bool:
+    """True when the doc carries the make-docs generated-file marker."""
+    return GENERATED_MARKER in md_path.read_text(encoding="utf-8")[:2000]
 
 
 def project_name(project: pathlib.Path) -> str:
@@ -75,10 +142,29 @@ def project_name(project: pathlib.Path) -> str:
 
 
 def pretty_slug(slug: str) -> str:
-    return slug.replace("-", " ").replace("_", " ").strip().capitalize()
+    return " ".join(
+        part.capitalize() for part in re.split(r"[-_]+", slug) if part
+    )
 
 
-def discover_pages(docs_dir: pathlib.Path) -> list[tuple[str, pathlib.Path, str]]:
+def normalize_page_set(value: str | None) -> set[str] | None:
+    if not value:
+        return None
+    pages = {
+        re.sub(r"\.md$", "", part.strip().lower()).replace("_", "-")
+        for part in value.split(",")
+        if part.strip()
+    }
+    return pages or None
+
+
+def discover_pages(
+    docs_dir: pathlib.Path,
+    *,
+    generated_only: bool = True,
+    only: set[str] | None = None,
+    skip: set[str] | None = None,
+) -> list[tuple[str, pathlib.Path, str]]:
     """Auto-discover public pages: README/index first, then alphabetical."""
     files = sorted(
         (p for p in docs_dir.glob("*.md") if not p.name.startswith("_")),
@@ -87,14 +173,27 @@ def discover_pages(docs_dir: pathlib.Path) -> list[tuple[str, pathlib.Path, str]
             p.name.lower(),
         ),
     )
-    pages = []
+    pages: list[tuple[str, pathlib.Path, str]] = []
+    seen: dict[str, pathlib.Path] = {}
     for path in files:
         slug = path.stem.lower().replace("_", "-")
+        if only is not None and slug not in only:
+            continue
+        if skip is not None and slug in skip:
+            continue
+        if generated_only and not has_generated_marker(path):
+            continue
+        if slug in seen:
+            raise ValueError(
+                f"duplicate page slug {slug!r}: {seen[slug]} and {path}"
+            )
+        seen[slug] = path
         label = first_heading(path) or pretty_slug(slug)
         pages.append((slug, path, label))
     return pages
 
 
+@functools.lru_cache(maxsize=1)
 def pandoc_path() -> str:
     """Prefer the Pandoc bundled with pypandoc; fall back to PATH."""
     try:
@@ -111,8 +210,17 @@ def pandoc_path() -> str:
     )
 
 
-def mermaid_js() -> str:
-    """Return a pinned, checksum-verified Mermaid build from the local cache."""
+def mermaid_js(explicit: pathlib.Path | None = None) -> str:
+    """Return a pinned, checksum-verified Mermaid build from a local source."""
+    if explicit is not None:
+        source = explicit.expanduser().resolve()
+        if not source.is_file():
+            sys.exit(f"Mermaid file not found: {source}")
+        data = source.read_bytes()
+        if hashlib.sha256(data).hexdigest() != MERMAID_SHA256:
+            sys.exit(f"Mermaid SHA-256 mismatch: {source}")
+        return data.decode("utf-8")
+
     cache = pathlib.Path(
         os.environ.get("XDG_CACHE_HOME", pathlib.Path.home() / ".cache")
     ) / "make-docs"
@@ -131,17 +239,113 @@ def mermaid_js() -> str:
     except Exception as exc:
         sys.exit(
             f"could not download Mermaid: {exc}\n"
-            f"Place the pinned file at {path} and rerun."
+            f"Place the pinned file at {path} and rerun, or pass --mermaid PATH."
         )
     if hashlib.sha256(data).hexdigest() != MERMAID_SHA256:
         sys.exit("Mermaid download failed the SHA-256 check")
-    path.write_bytes(data)
+
+    # Atomic cache write: concurrent builds must not read a partial file.
+    temp = path.with_name(f"{path.name}.tmp-{os.getpid()}")
+    try:
+        temp.write_bytes(data)
+        os.replace(temp, path)
+    finally:
+        if temp.exists():
+            temp.unlink()
     return data.decode("utf-8")
 
 
 def clean_text(value: str) -> str:
     value = re.sub(r"<[^>]+>", "", value)
     return html.unescape(value).strip()
+
+
+def rewrite_links(
+    frag: str,
+    slug: str,
+    source: pathlib.Path,
+    files: dict[str, pathlib.Path],
+    agents_link: str | None,
+    output: pathlib.Path,
+    project: pathlib.Path,
+) -> str:
+    """Make heading IDs page-local and rewrite links for the single page."""
+    # 1. Make every id unique to this document.
+    frag = re.sub(r'id="([^"]+)"', lambda m: f'id="{slug}-{m.group(1)}"', frag)
+
+    # 2. In-page links are local to this document now.
+    def local_anchor(m: re.Match[str]) -> str:
+        anchor = urllib.parse.unquote(m.group(1))
+        if not anchor or anchor in GLOBAL_ANCHORS or anchor.startswith(f"{slug}-"):
+            return m.group(0)
+        return f'href="#{slug}-{anchor}"'
+
+    frag = re.sub(r'href="#([^"]+)"', local_anchor, frag)
+
+    # 3. Cross-file links become page anchors, or local repo files for docs
+    #    that deliberately stay outside the published page (AGENTS.md, root
+    #    README, nested docs, non-Markdown assets).
+    unresolved: list[str] = []
+
+    def cross_file(m: re.Match[str]) -> str:
+        raw = html.unescape(m.group(1))
+        if (
+            raw.startswith("#")
+            or raw.startswith("//")
+            or re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", raw)
+        ):
+            return m.group(0)
+
+        path_part, _, anchor_part = raw.partition("#")
+        path = urllib.parse.unquote(path_part).split("?", 1)[0]
+        anchor = urllib.parse.unquote(anchor_part)
+        if not path:
+            return m.group(0)
+
+        if path.startswith("/"):
+            candidate = (project / path.lstrip("/")).resolve()
+        else:
+            candidate = (source.parent / path).resolve()
+
+        if candidate == output.resolve():
+            return 'href="#top"'
+
+        if candidate == (project / "AGENTS.md").resolve():
+            if agents_link is None:
+                unresolved.append(f"{slug}: {raw} (AGENTS.md not found)")
+                return m.group(0)
+            return f'href="{agents_link}"'
+
+        target_slug = next(
+            (
+                page_slug
+                for page_slug, page_path in files.items()
+                if page_path == candidate
+            ),
+            None,
+        )
+        if target_slug is not None:
+            if not anchor:
+                return f'href="#{target_slug}"'
+            if anchor.startswith(f"{target_slug}-"):
+                return f'href="#{anchor}"'
+            return f'href="#{target_slug}-{anchor}"'
+
+        # Existing files that are not embedded stay local links instead of
+        # failing the build. This covers the root README, nested docs, images,
+        # and other repo assets.
+        if candidate.is_file():
+            rel = os.path.relpath(candidate, output.parent).replace(os.sep, "/")
+            suffix = f"#{anchor}" if anchor else ""
+            return f'href="{rel}{suffix}"'
+
+        unresolved.append(f"{slug}: {raw}")
+        return m.group(0)
+
+    frag = re.sub(r'href="([^"]+)"', cross_file, frag)
+    if unresolved:
+        raise LinkError("unresolved relative links:\n  " + "\n  ".join(unresolved))
+    return frag
 
 
 def render(
@@ -167,76 +371,20 @@ def render(
         input=md,
         text=True,
         capture_output=True,
-        check=True,
+        check=False,
     )
+    if proc.returncode != 0:
+        sys.exit(f"pandoc failed for {source}:\n{proc.stderr.strip()}")
     warnings = [
         line
         for line in proc.stderr.splitlines()
-        if line.strip() and 'Deprecated: --highlight-style' not in line
+        if line.strip() and "Deprecated: --highlight-style" not in line
     ]
     if warnings:
         print(f"pandoc [{slug}]: " + "\n".join(warnings))
-    frag = proc.stdout
-
-    # 1. Make every id unique to this document.
-    frag = re.sub(r'id="([^"]+)"', lambda m: f'id="{slug}-{m.group(1)}"', frag)
-
-    # 2. In-page links are local to this document now.
-    frag = re.sub(
-        r'href="#([^"]+)"',
-        lambda m: m.group(0)
-        if m.group(1).startswith(f"{slug}-")
-        else f'href="#{slug}-{m.group(1)}"',
-        frag,
+    frag = rewrite_links(
+        proc.stdout, slug, source, files, agents_link, output, project
     )
-
-    # 3. Cross-file links become page anchors, or local repo files for docs
-    #    that deliberately stay outside the published page (AGENTS.md, README.md).
-    unresolved: list[str] = []
-
-    def cross_file(m: re.Match[str]) -> str:
-        target = m.group(1)
-        if target.startswith(("http://", "https://", "mailto:", "#")):
-            return m.group(0)
-        path, _, anchor = target.partition("#")
-        candidate = (source.parent / path).resolve()
-        if not path.endswith(".md"):
-            if candidate == output:
-                return 'href="#top"'
-            if candidate.is_file():
-                rel = os.path.relpath(candidate, output.parent).replace(os.sep, "/")
-                suffix = f"#{anchor}" if anchor else ""
-                return f'href="{rel}{suffix}"'
-            unresolved.append(f"{slug}: {target}")
-            return m.group(0)
-        if candidate == (project / "AGENTS.md").resolve():
-            if agents_link is None:
-                unresolved.append(f"{slug}: {target} (AGENTS.md not found)")
-            return f'href="{agents_link}"'
-        target_slug = next(
-            (
-                page_slug
-                for page_slug, page_path in files.items()
-                if page_path == candidate
-            ),
-            None,
-        )
-        if target_slug is None:
-            # The project-root README is not embedded; link to the local file.
-            if candidate == (project / "README.md").resolve() or candidate == (
-                project / "readme.md"
-            ).resolve():
-                rel = os.path.relpath(candidate, output.parent).replace(os.sep, "/")
-                suffix = f"#{anchor}" if anchor else ""
-                return f'href="{rel}{suffix}"'
-            unresolved.append(f"{slug}: {target}")
-            return m.group(0)
-        suffix = f"-{anchor}" if anchor else ""
-        return f'href="#{target_slug}{suffix}"'
-
-    frag = re.sub(r'href="([^"]+)"', cross_file, frag)
-    if unresolved:
-        sys.exit("unresolved relative links:\n  " + "\n  ".join(unresolved))
 
     # 4. Collect headings for the top contents block and the sidebar.
     heads: list[tuple[int, str, str]] = []
@@ -277,7 +425,9 @@ def render(
     )
 
 
-def nav_html(pages: list[tuple[str, str, list[tuple[int, str, str]]]], *, contents: bool) -> str:
+def nav_html(
+    pages: list[tuple[str, str, list[tuple[int, str, str]]]], *, contents: bool
+) -> str:
     """Build the contents block or the sidebar tree."""
     items: list[str] = []
     for slug, label, heads in pages:
@@ -322,6 +472,20 @@ def nav_html(pages: list[tuple[str, str, list[tuple[int, str, str]]]], *, conten
     return "<ul>" + "".join(items) + "</ul>"
 
 
+def scan_secrets(paths: list[pathlib.Path]) -> list[tuple[pathlib.Path, int, str]]:
+    """Return high-confidence secret hits in the selected docs."""
+    hits: list[tuple[pathlib.Path, int, str]] = []
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if ALLOW_SECRET in line:
+                continue
+            for name, pattern in SECRET_PATTERNS:
+                if pattern.search(line):
+                    hits.append((path, lineno, name))
+    return hits
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -348,6 +512,37 @@ def main() -> None:
         default=None,
         help="one-line description shown in the page header",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help=f"include docs without the {GENERATED_MARKER} marker",
+    )
+    parser.add_argument(
+        "--only",
+        default=None,
+        help="comma-separated page slugs to include",
+    )
+    parser.add_argument(
+        "--skip",
+        default=None,
+        help="comma-separated page slugs to exclude",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="validate pages and links without writing the HTML file",
+    )
+    parser.add_argument(
+        "--mermaid",
+        type=pathlib.Path,
+        default=None,
+        help="local Mermaid JS file to use instead of the cache/CDN",
+    )
+    parser.add_argument(
+        "--no-secret-scan",
+        action="store_true",
+        help="skip the high-confidence secret scan",
+    )
     args = parser.parse_args()
 
     project = args.project.resolve()
@@ -359,9 +554,36 @@ def main() -> None:
     if not TEMPLATE.is_file():
         sys.exit(f"template not found next to the script: {TEMPLATE}")
 
-    pages = discover_pages(docs_dir)
+    try:
+        pages = discover_pages(
+            docs_dir,
+            generated_only=not args.all,
+            only=normalize_page_set(args.only),
+            skip=normalize_page_set(args.skip),
+        )
+    except ValueError as exc:
+        sys.exit(str(exc))
     if not pages:
-        sys.exit(f"no public Markdown pages found in {docs_dir}")
+        hint = (
+            "No docs found."
+            if args.all
+            else f"No docs with {GENERATED_MARKER} found. "
+            "Run /make-docs first, or pass --all for legacy hand-written docs."
+        )
+        sys.exit(f"{hint}\nDocs directory: {docs_dir}")
+
+    if not args.no_secret_scan:
+        secret_hits = scan_secrets([path for _, path, _ in pages])
+        if secret_hits:
+            details = "\n".join(
+                f"  {path}:{lineno}: possible {name}"
+                for path, lineno, name in secret_hits
+            )
+            sys.exit(
+                "secret scan failed; remove the value, add a safe example, or "
+                f"exempt the line with {ALLOW_SECRET}:\n{details}"
+            )
+
     files = {slug: path.resolve() for slug, path, _ in pages}
 
     # AGENTS.md stays agent-facing: link to the local file, never embed it.
@@ -381,7 +603,12 @@ def main() -> None:
     for slug, path, label in pages:
         text = path.read_text(encoding="utf-8")
         mermaid_blocks += len(re.findall(r"^```mermaid\b", text, flags=re.M))
-        fragment, heads = render(text, slug, path, files, agents_link, output, project)
+        try:
+            fragment, heads = render(
+                text, slug, path, files, agents_link, output, project
+            )
+        except LinkError as exc:
+            sys.exit(str(exc))
         rendered[slug] = fragment
         metadata.append((slug, label, heads))
 
@@ -403,9 +630,13 @@ def main() -> None:
         input="```python\nx = 1\n```\n",
         text=True,
         capture_output=True,
-        check=True,
+        check=False,
     )
-    highlight_css = re.search(r"<style>(.*?)</style>", sample.stdout, re.S).group(1)
+    if sample.returncode != 0:
+        sys.exit(f"pandoc failed to render highlighting CSS:\n{sample.stderr.strip()}")
+    highlight_css = re.search(r"<style>(.*?)</style>", sample.stdout, re.S)
+    if highlight_css is None:
+        sys.exit("pandoc output is missing the highlighting style block")
 
     agents_note = (
         f'Internal <code>docs/_*.md</code> reports are excluded. '
@@ -420,11 +651,12 @@ def main() -> None:
         "{{PROJECT_NAME}}": html.escape(name),
         "{{LEDE}}": html.escape(lede),
         "{{BUILD_DATE}}": dt.date.today().isoformat(),
-        "{{HIGHLIGHT_CSS}}": highlight_css,
+        "{{HIGHLIGHT_CSS}}": highlight_css.group(1),
         "{{CONTENTS}}": contents,
         "{{SIDEBAR}}": sidebar,
         "{{BODY}}": body,
-        "{{MERMAID_JS}}": mermaid_js(),
+        # --check validates links/markers without downloading Mermaid.
+        "{{MERMAID_JS}}": "" if args.check else mermaid_js(args.mermaid),
         "{{AGENTS_NOTE}}": agents_note,
     }
     for marker in replacements:
@@ -439,16 +671,28 @@ def main() -> None:
     hrefs = re.findall(r'href="#([^"]+)"', page)
     missing = sorted({href for href in hrefs if href not in ids})
     if missing:
-        sys.exit(
-            "broken in-page links:\n  " + "\n  ".join(missing)
-        )
+        sys.exit("broken in-page links:\n  " + "\n  ".join(missing))
     if page.count('<section class="doc"') != len(pages):
         sys.exit("not every page produced a document section")
     if page.count('<pre class="mermaid">') != mermaid_blocks:
         sys.exit("Mermaid block count changed during conversion")
 
+    if args.check:
+        print(
+            f"check ok: {len(pages)} docs, {mermaid_blocks} Mermaid diagrams, "
+            f"{len(hrefs)} in-page links, no write"
+        )
+        return
+
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(page, encoding="utf-8")
+    temp = output.with_name(f"{output.name}.tmp-{os.getpid()}")
+    try:
+        temp.write_text(page, encoding="utf-8")
+        os.replace(temp, output)
+    finally:
+        if temp.exists():
+            temp.unlink()
+
     table_count = page.count('<div class="table-wrap">')
     print(
         f"wrote {output} "

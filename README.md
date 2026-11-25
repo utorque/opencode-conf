@@ -67,6 +67,7 @@ Custom slash commands + specialized workflows under `skills/`:
 - **planning** — `/grilling`, `/to-prd`, `/to-issues`
 - **tdd** — red-green-refactor
 - **pdf** — PDF read/write/merge/split/OCR
+- **make-docs** — `/make-docs` generates/refreshes a verified `docs/` suite; `/build-docs` builds or checks the single-page offline HTML dist with the skill's canonical script.
 
 ### Context hygiene
 

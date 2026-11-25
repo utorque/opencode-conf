@@ -13,3 +13,7 @@ plugins/
 *.json.bak
 
 .venv
+
+# Python test/build caches
+__pycache__/
+*.pyc
